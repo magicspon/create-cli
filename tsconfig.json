@@ -1,0 +1,43 @@
+{
+  "include": ["src/**/*.ts", "*.ts", "*.js"],
+  "exclude": ["dist", "node_modules"],
+
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+
+    /* Declared rather than inherited. Without this the node globals arrive
+       only transitively, via whichever config file happens to be in the
+       program — so a build that excluded them lost `process` and `console`. */
+    "types": ["node"],
+
+    /* A Node CLI, not a bundled app: `nodenext` is what actually resolves at
+       runtime, and it keeps `pnpm typecheck` honest about the emit. */
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    /* Source imports `./thing.ts` so it runs on bare Node via type stripping;
+       `rewriteRelativeImportExtensions` turns those into `./thing.js` on emit,
+       which is what makes the published package valid. (ADR 0004) */
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    /* Linting */
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    /* The registry and the directory map are both string-keyed lookups over
+       user-supplied keys, so an index access really can miss. Without this the
+       `??` guards that handle it typecheck as dead code. */
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true
+  }
+}

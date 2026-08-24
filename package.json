@@ -1,0 +1,71 @@
+{
+  "name": "@magicspon/scaffold",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A configurable file scaffolder: one generator, one file, composed rather than bundled.",
+  "keywords": [
+    "scaffold",
+    "generator",
+    "codegen",
+    "cli",
+    "react"
+  ],
+  "license": "MIT",
+  "author": "magicspon",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magicspon/scaffold.git"
+  },
+  "bugs": "https://github.com/magicspon/scaffold/issues",
+  "homepage": "https://github.com/magicspon/scaffold#readme",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "bin": {
+    "scaffold": "./dist/index.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/define-config.d.mts",
+      "default": "./dist/define-config.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "scaffold": "node src/index.ts",
+    "build": "tsdown",
+    "prepack": "pnpm build",
+    "lint": "oxlint",
+    "format": "oxfmt && oxlint --fix",
+    "check": "oxfmt --check && oxlint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "release": "changeset publish",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "c12": "^3.3.4",
+    "citty": "^0.2.2",
+    "es-toolkit": "^1.51.0"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.0",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@types/node": "^22.10.2",
+    "husky": "^9.1.7",
+    "nano-staged": "^1.0.2",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.79.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "latest"
+  }
+}

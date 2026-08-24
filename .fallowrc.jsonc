@@ -1,0 +1,29 @@
+{
+  // This file is JSONC: fallow reads these comments; generic JSON tools may not.
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    // The CLI and the `defineConfig` a consumer imports. Both are reachable
+    // from package.json, but naming them keeps the graph right if that moves.
+    "src/index.ts",
+    "src/define-config.ts"
+  ],
+  "ignoreDependencies": ["@commitlint/types"],
+
+  "dynamicallyLoaded": [
+    // Config by convention: .husky/pre-commit runs `pnpm exec nano-staged`,
+    // which finds this file by name. Nothing imports it, so the static graph
+    // cannot reach it.
+    "nano-staged.js"
+  ],
+  "duplicates": {
+    // Hide pair-only clones; focus on widespread copy-paste worth refactoring.
+    "minOccurrences": 3
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+    // `dev-dependency-in-production` stays on now that this package is
+    // published: @clack/prompts, c12, citty and es-toolkit are real runtime
+    // dependencies of the shipped binary, so the rule is load-bearing rather
+    // than noise. It was off while nothing here shipped.
+  }
+}
