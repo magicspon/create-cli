@@ -92,6 +92,15 @@ export interface TemplateContext extends NameCasings {
   imports: Record<string, string>
 }
 
+/**
+ * The function inside a generator: a template context in, file contents out.
+ *
+ * Named because it is the unit a project can supply on its own — inline as a
+ * generator's `render`, or as a file in the configured template directory.
+ * (ADR 0002, ADR 0005)
+ */
+export type Template = (context: TemplateContext) => string
+
 /** A named recipe turning a name and a directory into exactly one file. */
 export interface Generator {
   id: GeneratorId
@@ -109,7 +118,7 @@ export interface Generator {
    * co-location — same name, same directory — never by reading the file.
    */
   target?: GeneratorId
-  render: (context: TemplateContext) => string
+  render: Template
 }
 
 /**

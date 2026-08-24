@@ -46,13 +46,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "release": "changeset publish",
+    "yalc:publish": "pnpm build && yalc publish --push --no-scripts",
+    "yalc:remove": "yalc installations clean @magicspon/scaffold",
     "prepare": "husky"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
     "c12": "^3.3.4",
     "citty": "^0.2.2",
-    "es-toolkit": "^1.51.0"
+    "es-toolkit": "^1.51.0",
+    "jiti": "^2.7.0"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",
@@ -66,6 +69,7 @@
     "oxlint-tsgolint": "^7.0.2001",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "vitest": "latest"
+    "vitest": "latest",
+    "yalc": "1.0.0-pre.53"
   }
 }

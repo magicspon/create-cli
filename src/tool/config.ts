@@ -13,8 +13,9 @@ import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, join, parse, resolve } from 'node:path'
 import { loadConfig as loadC12 } from 'c12'
 import { builtInGenerators, createRegistry } from './generators.ts'
+import { applyTemplates, loadTemplates } from './user-templates.ts'
 
-import type { Generator, Registry } from './generators.ts'
+import type { Generator, Registry, Template } from './generators.ts'
 
 /** The name c12 searches for — `scaffold.config.ts`, `.scaffoldrc`, and friends. */
 const CONFIG_NAME = 'scaffold'
@@ -49,6 +50,12 @@ export interface ScaffoldUserConfig {
   presets?: Array<string>
   /** Generators this project defines itself. Override a built-in by reusing its id. */
   generators?: Array<Generator>
+  /**
+   * Directory of template files, relative to the project root. A file named
+   * after a generator — `component.ts`, `hook-test.ts` — replaces that
+   * generator's `render` and nothing else. (ADR 0005)
+   */
+  templates?: string
   /** Built-in ids to switch off, by id. */
   disable?: Array<string>
   /**
@@ -152,11 +159,18 @@ export function resolveGenerators(user: ScaffoldUserConfig): Array<Generator> {
   return [...byId.values()]
 }
 
-/** Fold a loaded config file into the resolved shape the rest of the tool uses. */
+/**
+ * Fold a loaded config file into the resolved shape the rest of the tool uses.
+ *
+ * `templates` arrives already read from disk, because this stays synchronous:
+ * loading is `loadConfig`'s job, and everything downstream — `plan()` above
+ * all — sees an overridden generator as just a generator. (ADR 0005)
+ */
 export function resolveConfig(
   user: ScaffoldUserConfig,
   root: string,
   configFile: string | null = null,
+  templates: Record<string, Template> = {},
 ): ScaffoldConfig {
   return {
     root,
@@ -165,7 +179,11 @@ export function resolveConfig(
     imports: { ...user.imports },
     protect: user.protect ?? [],
     format: user.format ?? [],
-    registry: createRegistry(resolveGenerators(user)),
+    // Applied last, over the fully composed list, so a template file can
+    // override a generator the project defined itself as readily as a built-in.
+    registry: createRegistry(
+      applyTemplates(resolveGenerators(user), templates),
+    ),
   }
 }
 
@@ -200,5 +218,10 @@ export async function loadConfig(
       ? configFile
       : null
 
-  return resolveConfig(config, root, found)
+  // The only disk read besides the config file itself, and only when asked for.
+  const templates = config.templates
+    ? await loadTemplates(config.templates, root)
+    : {}
+
+  return resolveConfig(config, root, found, templates)
 }

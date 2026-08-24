@@ -397,6 +397,73 @@ export function ${pascalName}({ className, ...props }: ${pascalName}Props) {
 })
 ```
 
+### A directory of templates
+
+Reusing an id means restating the generator's description, directory and `fileName` in order to
+change the one function you cared about. If the render is all you want to replace, point `templates`
+at a directory and name each file after the generator it overrides:
+
+```ts
+// scaffold.config.ts
+export default defineConfig({
+  templates: 'scaffold/templates',
+  imports: { utils: '#/lib/utils' },
+})
+```
+
+```ts
+// scaffold/templates/component.ts
+import { defineTemplate } from '@magicspon/scaffold'
+
+export default defineTemplate(
+  ({ pascalName, imports }) => `import { cn } from '${imports.utils}'
+
+import type { ComponentProps } from 'react'
+
+export interface ${pascalName}Props extends ComponentProps<'div'> {}
+
+export function ${pascalName}({ className, ...props }: ${pascalName}Props) {
+  return <div className={cn('', className)} {...props} />
+}
+`,
+)
+```
+
+```
+$ pnpm scaffold component Card
++ src/components/card.tsx        # your template, not the built-in one
+```
+
+The filename is the whole declaration — there is nothing to register:
+
+| File                     | Effect                                                  |
+| ------------------------ | ------------------------------------------------------- |
+| `templates/component.ts` | Replaces the `component` generator's render             |
+| `templates/hook-test.ts` | Replaces `hook-test`'s, once the `browser` preset is on |
+| `templates/route.ts`     | Replaces the render of a `route` **you** declared       |
+| `templates/_banner.ts`   | Not a template — a helper your templates import         |
+
+**Only `render` is replaced.** `component` keeps its id, its description, its `src/components`
+default and its `.tsx` filename, so it stays exactly where it was in `--help`, in `--with` and in
+the wizard. If you want a different filename or directory, you are describing a different generator
+— declare it in [`generators`](#a-first-generator) instead.
+
+**A file that matches no generator refuses the run.** `componant.ts` skipped quietly would still
+scaffold, just from the built-in template, and it would look like a success:
+
+```
+$ pnpm scaffold component Card
+✖ There is no "componant" generator for the template of that name.
+  Available: component, hook, test. Prefix the file with `_` if it is not
+  meant to be a template.
+```
+
+`_`-prefixed files, dotfiles, `.d.ts` files and anything that is not `.ts`/`.tsx`/`.mts`/`.js`/
+`.mjs`/`.jsx` are left alone. A `render` named export works as well as a default one, so a template
+lifted out of `generators` needs no rewriting. Templates are loaded by
+[jiti](https://github.com/unjs/jiti) — the same loader that reads your config — so they can import
+helpers beside them and are typechecked like any other file in your project.
+
 ### `imports`
 
 Rather than hard-coding your project's aliases into every template, declare them once:
@@ -470,7 +537,11 @@ export function renderRoute({
 }
 ```
 
-`Generator`, `TemplateContext`, `NameCasings` and `ScaffoldUserConfig` are all exported for this.
+`Generator`, `Template`, `TemplateContext`, `NameCasings` and `ScaffoldUserConfig` are all exported
+for this, along with `defineTemplate` for a file that is nothing but a template.
+
+> If you are only replacing renders, [a template directory](#a-directory-of-templates) does this
+> without the config file having to name each file.
 
 > The import above is extensionless, which is what typechecks under
 > `moduleResolution: "bundler"` — the setting most React projects use. Under `node16`/`nodenext`,
@@ -483,15 +554,16 @@ export function renderRoute({
 
 Every field is optional.
 
-| Field         | Default                                  | Meaning                                               |
-| ------------- | ---------------------------------------- | ----------------------------------------------------- |
-| `directories` | `src/components`, `src/hooks`, `src/lib` | Where each generator writes, keyed by its `directory` |
-| `presets`     | `[]`                                     | Built-in groups to switch on                          |
-| `generators`  | `[]`                                     | Your own generators                                   |
-| `disable`     | `[]`                                     | Generator ids to switch off                           |
-| `imports`     | `{}`                                     | Import specifiers your templates reference            |
-| `protect`     | `[]`                                     | Directories no generator may write into               |
-| `format`      | `[]`                                     | Commands run over written files                       |
+| Field         | Default                                  | Meaning                                                          |
+| ------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `directories` | `src/components`, `src/hooks`, `src/lib` | Where each generator writes, keyed by its `directory`            |
+| `presets`     | `[]`                                     | Built-in groups to switch on                                     |
+| `generators`  | `[]`                                     | Your own generators                                              |
+| `templates`   | unset                                    | Directory of templates, named after the generator each overrides |
+| `disable`     | `[]`                                     | Generator ids to switch off                                      |
+| `imports`     | `{}`                                     | Import specifiers your templates reference                       |
+| `protect`     | `[]`                                     | Directories no generator may write into                          |
+| `format`      | `[]`                                     | Commands run over written files                                  |
 
 ### `protect`
 

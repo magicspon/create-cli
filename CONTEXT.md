@@ -30,6 +30,11 @@ The TypeScript function inside a generator that turns a template context into fi
 file in a template language, and not necessarily ours — a project supplies its own. (ADR 0002,
 ADR 0003)
 
+**Template directory**:
+A directory a project points `templates` at, whose files are templates named after the generator
+each one overrides — `component.ts` overrides `component`'s render, and nothing else about it. A
+file prefixed `_` is a helper rather than a template. (ADR 0005)
+
 **Template context**:
 The values a template may use — the name in every casing it needs, the resolved paths, and the
 project's configured `imports`. The only input a template gets.
@@ -67,6 +72,8 @@ will overwrite it — `src/components/ui` under shadcn, say. Empty by default.
   sensible.
 - A project's own generators are indistinguishable from built-in ones once registered — same
   `--help`, same `--with`, same wizard.
+- A file in the template directory that names no generator refuses the run. Scaffolding the
+  built-in output instead would look exactly like success.
 
 ## Boundaries
 

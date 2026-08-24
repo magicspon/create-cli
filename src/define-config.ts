@@ -8,12 +8,14 @@
  */
 
 import type { ScaffoldUserConfig } from './tool/config.ts'
+import type { Template } from './tool/generators.ts'
 
 export type {
   Generator,
   GeneratorId,
   NameCasings,
   Registry,
+  Template,
   TemplateContext,
 } from './tool/generators.ts'
 
@@ -33,4 +35,22 @@ export type { ScaffoldConfig, ScaffoldUserConfig } from './tool/config.ts'
  */
 export function defineConfig(config: ScaffoldUserConfig): ScaffoldUserConfig {
   return config
+}
+
+/**
+ * Type a template file in the configured `templates` directory without
+ * annotating its context.
+ *
+ * The same identity trick as `defineConfig`, for the same reason: a file whose
+ * whole content is one exported function has nowhere else to hang the type.
+ *
+ * ```ts
+ * // scaffold/templates/component.ts
+ * import { defineTemplate } from '@magicspon/scaffold'
+ *
+ * export default defineTemplate(({ pascalName }) => `...`)
+ * ```
+ */
+export function defineTemplate(template: Template): Template {
+  return template
 }

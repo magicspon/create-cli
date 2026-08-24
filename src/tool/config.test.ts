@@ -249,6 +249,51 @@ describe('loadConfig', () => {
     ).toBe('about.route.ts')
   })
 
+  it('renders a built-in from the template directory when a file matches its id', async () => {
+    writePackage(root)
+    mkdirSync(join(root, 'scaffold', 'templates'), { recursive: true })
+    writeFileSync(
+      join(root, 'scaffold', 'templates', 'component.ts'),
+      `export default (c) => 'export const ' + c.pascalName + ' = 1\\n'\n`,
+    )
+    writeFileSync(
+      join(root, 'scaffold.config.ts'),
+      `export default { templates: 'scaffold/templates' }\n`,
+    )
+
+    const config = await loadConfig(root)
+    const component = config.registry.find('component')
+
+    expect(
+      component?.render({
+        kebabName: 'card',
+        pascalName: 'Card',
+        hookName: 'useCard',
+        kebabHookName: 'use-card',
+        directory: 'src/components',
+        path: 'src/components/card.tsx',
+        targetImport: '',
+        imports: {},
+      }),
+    ).toBe('export const Card = 1\n')
+
+    // Only `render` moved: the generator is still the built-in one, so it keeps
+    // its place in `--help`, in `--with` and in the wizard.
+    expect(
+      component?.fileName({
+        kebabName: 'card',
+        pascalName: 'Card',
+        hookName: 'useCard',
+        kebabHookName: 'use-card',
+      }),
+    ).toBe('card.tsx')
+    expect(config.registry.all.map((g) => g.id)).toEqual([
+      'component',
+      'hook',
+      'test',
+    ])
+  })
+
   it('finds the config file from a nested working directory', async () => {
     writePackage(root)
     writeFileSync(

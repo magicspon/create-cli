@@ -30,6 +30,7 @@ src/
     wizard.ts           # the argumentless path
     fuzzy.ts            # path scoring, shared by both pickers
     prompts.ts          # clack helpers — cancel handling, stdin release
+    user-templates.ts   # the configured template directory, matched by filename
   templates/            # one file per built-in output type
 ```
 
@@ -39,6 +40,11 @@ src/
   `src/tool/generators.ts` — in `core` if it assumes nothing beyond React, in a `presets` group if
   it needs a runner a project may not have. It then appears in `--help`, in the wizard, and — if it
   declares a `target` — in the picker, automatically.
+- **A template file overrides only `render`.** `templates/<generator-id>.ts` in the configured
+  template directory replaces that generator's render function; everything else about the generator
+  stays. A project wanting a different `fileName` or `directory` is describing a different generator
+  and declares it in `generators`. The match is on generator id, never on our own template
+  filenames. (ADR 0005)
 - **The registry is per-run, never module-level.** Pass a `Registry` rather than importing one.
   `GeneratorId` is `string`, because a project's own generators cannot be enumerated ahead of time.
 - **Config is loaded once, in `index.ts`, before the command is defined.** The subcommand list _is_
@@ -61,15 +67,16 @@ src/
 
 Package manager is **pnpm**.
 
-| Task             | Command          |
-| ---------------- | ---------------- |
-| Run from source  | `pnpm scaffold`  |
-| Build            | `pnpm build`     |
-| Lint             | `pnpm lint`      |
-| Format + autofix | `pnpm format`    |
-| Check formatting | `pnpm check`     |
-| Typecheck        | `pnpm typecheck` |
-| Tests            | `pnpm test`      |
+| Task             | Command             |
+| ---------------- | ------------------- |
+| Run from source  | `pnpm scaffold`     |
+| Build            | `pnpm build`        |
+| Lint             | `pnpm lint`         |
+| Format + autofix | `pnpm format`       |
+| Check formatting | `pnpm check`        |
+| Typecheck        | `pnpm typecheck`    |
+| Tests            | `pnpm test`         |
+| Link locally     | `pnpm yalc:publish` |
 
 `pnpm scaffold` runs `src/index.ts` on bare Node — the types are stripped, and `.ts` import
 specifiers resolve, so there is no build step in development. The **published** package is compiled
