@@ -1,5 +1,9 @@
 # Template files are matched to generators by filename
 
+> Extended by [ADR 0006](0006-template-files-declare-their-generator.md): a template file may now
+> declare the rest of its generator too, and one naming no existing generator declares a new one.
+> The filename is still the id, and the render-only form below is unchanged.
+
 [ADR 0003](0003-generators-come-from-config.md) gave a project one way to emit its own house style:
 declare a generator in `scaffold.config.ts` reusing a built-in's id. That works, and it stays. But
 to change the one function it actually cared about, a project had to restate the rest of the

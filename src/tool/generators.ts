@@ -107,8 +107,10 @@ export interface Generator {
   /** Shown in `--help` and in the wizard's generator list. */
   description: string
   /**
-   * Key into the config's `directories` supplying this generator's default
-   * directory. A key nothing configures falls back to the project root.
+   * Where this generator writes by default. A plain word is a key into the
+   * config's `directories`; anything containing a `/` is already a path
+   * relative to the project root. A key nothing configures resolves to
+   * `src/<key>`. (ADR 0006)
    */
   directory: string
   /** The file this generator writes, relative to the resolved directory. */
@@ -118,6 +120,38 @@ export interface Generator {
    * co-location — same name, same directory — never by reading the file.
    */
   target?: GeneratorId
+  render: Template
+}
+
+/**
+ * The parts of a generator a template file may declare alongside its render.
+ *
+ * Every field is optional because a file named after an existing generator
+ * inherits the rest of it — restating them is the copy-and-drift ADR 0005 was
+ * written to stop. There is no `id`: the filename is the id, so that a
+ * generator has exactly one name in exactly one place. (ADR 0006)
+ */
+export interface TemplateMeta {
+  /** Shown in `--help` and the wizard. Defaults to the generator id. */
+  description?: string
+  /** As `Generator['directory']`. Defaults to the generator id. */
+  directory?: string
+  /**
+   * Required only for a file naming no existing generator — it is the one
+   * field nothing sensible can be inferred from.
+   */
+  fileName?: (casings: NameCasings) => string
+  /** As `Generator['target']`. */
+  target?: GeneratorId
+}
+
+/**
+ * What a template file declares: its render, plus anything it overrides.
+ *
+ * This is what `defineTemplate(config, render)` returns. A file exporting a
+ * bare function is the same thing with nothing overridden.
+ */
+export interface DeclaredTemplate extends TemplateMeta {
   render: Template
 }
 

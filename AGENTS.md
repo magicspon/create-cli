@@ -40,11 +40,15 @@ src/
   `src/tool/generators.ts` — in `core` if it assumes nothing beyond React, in a `presets` group if
   it needs a runner a project may not have. It then appears in `--help`, in the wizard, and — if it
   declares a `target` — in the picker, automatically.
-- **A template file overrides only `render`.** `templates/<generator-id>.ts` in the configured
-  template directory replaces that generator's render function; everything else about the generator
-  stays. A project wanting a different `fileName` or `directory` is describing a different generator
-  and declares it in `generators`. The match is on generator id, never on our own template
-  filenames. (ADR 0005)
+- **A template file is a generator.** `templates/<generator-id>.ts` in the template directory
+  (`scaffold/templates` by default, no config needed) overrides the generator of that id field by
+  field, or declares one when the id is new. Exporting a bare function overrides `render` and
+  nothing else; exporting `defineTemplate(config, render)` overrides whatever the config names. The
+  match is on generator id, never on our own template filenames, and the filename is the only place
+  an id is written — there is no `id` field. (ADR 0005, ADR 0006)
+- **A directory key nothing configures resolves to `src/<key>`**, and a `directory` containing a `/`
+  is a path rather than a key. `resolveConfig` fills an entry for every key the registry uses, so
+  the `?? '.'` at the lookup sites can no longer fire for a registered generator. (ADR 0006)
 - **The registry is per-run, never module-level.** Pass a `Registry` rather than importing one.
   `GeneratorId` is `string`, because a project's own generators cannot be enumerated ahead of time.
 - **Config is loaded once, in `index.ts`, before the command is defined.** The subcommand list _is_

@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1787611541.277549,
-    "ast_hash": "f0b78f988cf82adad9ea735f3c310ecf",
+    "mtime": 1787609141.230621,
+    "ast_hash": "815eb91d086aaece41a9695d0e980fdb",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -15,13 +15,13 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1787652443.8659887,
-    "ast_hash": "22f71506f5c128db2006b38d69468d9a",
+    "mtime": 1787609523.1540275,
+    "ast_hash": "530e527333ca946d6ca3f9fa71ce784d",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1787652564.2425134,
-    "ast_hash": "337526856ca33d576d1931ea733677bb",
+    "mtime": 1787610232.7338266,
+    "ast_hash": "e948c4084699262c7f95cb59261ccca0",
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1787652436.47922,
-    "ast_hash": "906d58db7bf8c30444a35a854608cdcf",
+    "mtime": 1787609438.5581784,
+    "ast_hash": "185608ff0def2585df1622f530f1d513",
     "semantic_hash": ""
   },
   "docs/adr/0001-generators-emit-one-file.md": {
@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "src/define-config.ts": {
-    "mtime": 1787652385.9093614,
-    "ast_hash": "06a3dc9edba79276ad07a17b43180ec3",
+    "mtime": 1787609309.3627222,
+    "ast_hash": "03ad7a405a4352482fdf6e71ba5a6501",
     "semantic_hash": ""
   },
   "src/index.ts": {
@@ -260,13 +260,13 @@
     "semantic_hash": ""
   },
   "src/tool/config.test.ts": {
-    "mtime": 1787652183.3287706,
-    "ast_hash": "7559b119b23b2bfc886aaf5e3892f369",
+    "mtime": 1787609523.016641,
+    "ast_hash": "d3b90be0763b3019b54836767b1a2b51",
     "semantic_hash": ""
   },
   "src/tool/config.ts": {
-    "mtime": 1787652103.0736551,
-    "ast_hash": "2a8c13aa4765ec49f3ee058d65cf3aef",
+    "mtime": 1787609324.5180852,
+    "ast_hash": "ceb3c969d6d48137d49ba77a4cfba246",
     "semantic_hash": ""
   },
   "src/tool/directories.test.ts": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "src/tool/generators.ts": {
-    "mtime": 1787652039.0406213,
-    "ast_hash": "45c942440600f917c81af86157b6da96",
+    "mtime": 1787609271.5838673,
+    "ast_hash": "702af1787e4ed96b9cbe6c723b370bcf",
     "semantic_hash": ""
   },
   "src/tool/pick.ts": {
@@ -357,36 +357,6 @@
   "docs/adr/0004-the-package-ships-compiled-javascript.md": {
     "mtime": 1787609413.7683659,
     "ast_hash": "4c490df0ad7416f5b73c639ef317a6d9",
-    "semantic_hash": ""
-  },
-  "src/tool/user-templates.test.ts": {
-    "mtime": 1787652385.909996,
-    "ast_hash": "d65267c7ee69235b26e18e035a22834e",
-    "semantic_hash": ""
-  },
-  "src/tool/user-templates.ts": {
-    "mtime": 1787652385.9090576,
-    "ast_hash": "c92b9122e3c86918d772832bd41caf0d",
-    "semantic_hash": ""
-  },
-  ".changeset/lucky-pugs-repeat.md": {
-    "mtime": 1787611906.5708516,
-    "ast_hash": "361f94de4725063b2cdb26c68d06c5f9",
-    "semantic_hash": ""
-  },
-  ".changeset/zero-config-templates.md": {
-    "mtime": 1787652560.9119852,
-    "ast_hash": "f03f7afdc74028a467ce8aebf529b489",
-    "semantic_hash": ""
-  },
-  "docs/adr/0005-template-files-are-matched-by-filename.md": {
-    "mtime": 1787652425.7131672,
-    "ast_hash": "97f534e84414b0201016c6bcd5b03e66",
-    "semantic_hash": ""
-  },
-  "docs/adr/0006-template-files-declare-their-generator.md": {
-    "mtime": 1787652564.1720219,
-    "ast_hash": "2a7a2dc86c32ff26effb37968412cb5b",
     "semantic_hash": ""
   }
 }

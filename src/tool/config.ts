@@ -15,10 +15,20 @@ import { loadConfig as loadC12 } from 'c12'
 import { builtInGenerators, createRegistry } from './generators.ts'
 import { applyTemplates, loadTemplates } from './user-templates.ts'
 
-import type { Generator, Registry, Template } from './generators.ts'
+import type { DeclaredTemplate, Generator, Registry } from './generators.ts'
 
 /** The name c12 searches for — `scaffold.config.ts`, `.scaffoldrc`, and friends. */
 const CONFIG_NAME = 'scaffold'
+
+/**
+ * The template directory a project gets without configuring one.
+ *
+ * Probed rather than required, so a project adds its first generator by adding
+ * a file and nothing else. One path rather than a list of candidates: which of
+ * several won would be a rule to learn, and the point is not having to learn
+ * one. (ADR 0006)
+ */
+export const DEFAULT_TEMPLATE_DIRECTORY = 'scaffold/templates'
 
 /**
  * Directories every built-in generator falls back to.
@@ -52,8 +62,9 @@ export interface ScaffoldUserConfig {
   generators?: Array<Generator>
   /**
    * Directory of template files, relative to the project root. A file named
-   * after a generator — `component.ts`, `hook-test.ts` — replaces that
-   * generator's `render` and nothing else. (ADR 0005)
+   * after a generator overrides it; a file named after nothing declares a new
+   * one. Defaults to `scaffold/templates` when that directory exists.
+   * (ADR 0005, ADR 0006)
    */
   templates?: string
   /** Built-in ids to switch off, by id. */
@@ -170,21 +181,53 @@ export function resolveConfig(
   user: ScaffoldUserConfig,
   root: string,
   configFile: string | null = null,
-  templates: Record<string, Template> = {},
+  templates: Record<string, DeclaredTemplate> = {},
 ): ScaffoldConfig {
+  // Applied last, over the fully composed list, so a template file can
+  // override a generator the project defined itself as readily as a built-in.
+  const registry = createRegistry(
+    applyTemplates(resolveGenerators(user), templates),
+  )
+
   return {
     root,
     configFile,
-    directories: { ...DEFAULT_DIRECTORIES, ...user.directories },
+    directories: resolveDirectories(user, registry),
     imports: { ...user.imports },
     protect: user.protect ?? [],
     format: user.format ?? [],
-    // Applied last, over the fully composed list, so a template file can
-    // override a generator the project defined itself as readily as a built-in.
-    registry: createRegistry(
-      applyTemplates(resolveGenerators(user), templates),
-    ),
+    registry,
   }
+}
+
+/**
+ * A path for every directory key the resolved registry actually uses.
+ *
+ * A generator declared in a template file names a key nothing configures —
+ * that is the whole point of not needing a config file — and falling through to
+ * the project root would scaffold `src/routes/home.route.ts` into the repo root
+ * instead. `src/<key>` is not a new convention: it is what every entry in
+ * `DEFAULT_DIRECTORIES` already spells out. (ADR 0006)
+ */
+function resolveDirectories(
+  user: ScaffoldUserConfig,
+  registry: Registry,
+): Record<string, string> {
+  const directories: Record<string, string> = {
+    ...DEFAULT_DIRECTORIES,
+    ...user.directories,
+  }
+
+  for (const { directory } of registry.all) {
+    if (directories[directory]) continue
+    // A key with a `/` in it was written as a path, not as a key — `src/routes`
+    // means `src/routes`, never `src/src/routes`.
+    directories[directory] = directory.includes('/')
+      ? directory
+      : `src/${directory}`
+  }
+
+  return directories
 }
 
 /**
@@ -218,10 +261,17 @@ export async function loadConfig(
       ? configFile
       : null
 
-  // The only disk read besides the config file itself, and only when asked for.
-  const templates = config.templates
-    ? await loadTemplates(config.templates, root)
-    : {}
+  // A configured directory that is missing still throws; the conventional one
+  // is a lookup, because "no templates" and "no such directory" are the same
+  // answer when nobody asked for it. (ADR 0006)
+  const directory =
+    config.templates ??
+    (existsSync(join(root, DEFAULT_TEMPLATE_DIRECTORY))
+      ? DEFAULT_TEMPLATE_DIRECTORY
+      : null)
+
+  // The only disk read besides the config file itself.
+  const templates = directory ? await loadTemplates(directory, root) : {}
 
   return resolveConfig(config, root, found, templates)
 }

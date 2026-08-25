@@ -31,9 +31,19 @@ file in a template language, and not necessarily ours — a project supplies its
 ADR 0003)
 
 **Template directory**:
-A directory a project points `templates` at, whose files are templates named after the generator
-each one overrides — `component.ts` overrides `component`'s render, and nothing else about it. A
-file prefixed `_` is a helper rather than a template. (ADR 0005)
+`scaffold/templates` unless a project points `templates` somewhere else. Each file is named after
+the generator it overrides — `component.ts` overrides `component` — or, when it names no existing
+generator, declares one. A file prefixed `_` is a helper rather than a template. (ADR 0005,
+ADR 0006)
+
+**Declaration**:
+What a template file says about its generator besides the render — `description`, `directory`,
+`fileName`, `target`. Never an `id`: the filename is the id. A file that declares nothing is the
+render-only override. (ADR 0006)
+
+**Directory key**:
+A generator's `directory`. A plain word is a key into the config's `directories` and resolves to
+`src/<key>` when nothing configures it; a value containing a `/` is already a path. (ADR 0006)
 
 **Template context**:
 The values a template may use — the name in every casing it needs, the resolved paths, and the
@@ -72,8 +82,11 @@ will overwrite it — `src/components/ui` under shadcn, say. Empty by default.
   sensible.
 - A project's own generators are indistinguishable from built-in ones once registered — same
   `--help`, same `--with`, same wizard.
-- A file in the template directory that names no generator refuses the run. Scaffolding the
-  built-in output instead would look exactly like success.
+- A file in the template directory either overrides a generator or declares one. A file that does
+  neither — no matching generator and no `fileName` to declare one with — refuses the run.
+  Scaffolding the built-in output instead would look exactly like success.
+- A generator never writes to the project root by accident. Every directory key the registry uses
+  resolves to a path, configured or `src/<key>`.
 
 ## Boundaries
 

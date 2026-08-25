@@ -2,15 +2,15 @@
  * Templates a project keeps in a directory of its own, matched to generators by
  * filename.
  *
- * `generators` already lets a project replace a built-in wholesale, but a
- * project that only wants its own house style for `component` had to restate
- * that generator's id, description, directory and `fileName` in order to change
- * the one function it cared about. A template directory says the same thing by
- * convention: `templates/component.ts` replaces `component`'s render and
- * nothing else. (ADR 0005)
+ * A file named after an existing generator overrides it: bare, it replaces that
+ * generator's render and nothing else (ADR 0005); with a config object, it
+ * replaces whatever else it names too. A file naming no existing generator
+ * *declares* one, so a project adds a generator by adding a file rather than by
+ * also registering it in `generators`. (ADR 0006)
  *
- * The matching key is the **generator id**, not our own template filenames —
- * `component`, `hook-test`, and equally a generator the project defined itself.
+ * The matching key is the **generator id**, and the filename is the only place
+ * an id is written — `component`, `hook-test`, and equally a generator the
+ * project invented.
  *
  * Everything here except `loadTemplates` is pure, which is what keeps the
  * filename rules and the override rules testable without a filesystem.
@@ -21,7 +21,7 @@ import { extname, join, resolve } from 'node:path'
 import { attemptAsync } from 'es-toolkit'
 import { createJiti } from 'jiti'
 
-import type { Generator, Template } from './generators.ts'
+import type { DeclaredTemplate, Generator, Template } from './generators.ts'
 
 /**
  * Extensions a template file may use.
@@ -81,15 +81,25 @@ export function templateFilesIn(entries: Array<string>): Map<string, string> {
   return files
 }
 
+/** `defineTemplate(config, render)`'s return value, as it arrives back here. */
+function isDeclaration(value: unknown): value is DeclaredTemplate {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as DeclaredTemplate).render === 'function'
+  )
+}
+
 /**
- * The render function a loaded template module offers, as the default export or
- * as a named `render`.
+ * The declaration a loaded template module offers, as the default export or as
+ * a named `render`.
  *
  * Both are accepted because a template moved out of a config file's `generators`
  * array arrives already named `render`, and renaming it to a default export
- * would be busywork.
+ * would be busywork. A bare function is the render-only form, normalised here
+ * so nothing downstream has to know which of the two shapes was written.
  */
-export function templateFrom(module: unknown, file: string): Template {
+export function templateFrom(module: unknown, file: string): DeclaredTemplate {
   // jiti hands back a module namespace, but a transpiled CommonJS template can
   // still arrive as the function itself.
   const candidate =
@@ -98,46 +108,106 @@ export function templateFrom(module: unknown, file: string): Template {
       : ((module as Record<string, unknown> | null)?.default ??
         (module as Record<string, unknown> | null)?.render)
 
-  if (typeof candidate !== 'function') {
-    throw new Error(
-      `${file} exports no template function. Export it as the default export, ` +
-        'or as `render`.',
-    )
-  }
+  if (typeof candidate === 'function') return { render: candidate as Template }
+  if (isDeclaration(candidate)) return candidate
 
-  return candidate as Template
+  throw new Error(
+    `${file} exports no template. Export it as the default export — a render ` +
+      'function, or `defineTemplate(config, render)` — or as `render`.',
+  )
 }
 
 /**
- * Swap in each template over the generator of the same id.
+ * Only what a template file actually declared.
  *
- * Only `render` is replaced. A project that also wants a different filename or
- * directory is describing a different generator, and says so in `generators`.
- *
- * A template matching no generator throws — the same reasoning as an unknown
- * preset name. Skipping it silently would read as the override not working,
- * which is the one failure a scaffolder cannot afford: the file lands, it is
- * just the wrong file.
+ * Spreading `TemplateMeta` wholesale would overwrite the built-in's description
+ * with `undefined` for every field the file left out, which is the opposite of
+ * inheriting it. Listed by hand because `TemplateMeta` is a public type and a
+ * field added to it should not start applying here silently.
  */
-export function applyTemplates(
-  generators: Array<Generator>,
-  templates: Record<string, Template>,
-): Array<Generator> {
-  const ids = new Set(generators.map((generator) => generator.id))
+function declaredMeta(template: DeclaredTemplate): Partial<Generator> {
+  const meta: Partial<Generator> = {}
 
-  const orphan = Object.keys(templates).find((id) => !ids.has(id))
-  if (orphan) {
+  if (template.description !== undefined)
+    meta.description = template.description
+  if (template.directory !== undefined) meta.directory = template.directory
+  if (template.fileName !== undefined) meta.fileName = template.fileName
+  if (template.target !== undefined) meta.target = template.target
+
+  return meta
+}
+
+/**
+ * The generator a template file declares on its own, for a filename naming no
+ * existing generator.
+ *
+ * `fileName` is the one field with no honest default, so a file that omits it
+ * is refused — which is also what catches `componant.ts`. That typo used to be
+ * caught by there being no `componant` generator; now there is one, and the
+ * missing `fileName` is what stops it. (ADR 0006)
+ */
+function declareGenerator(
+  id: string,
+  template: DeclaredTemplate,
+  available: Array<string>,
+): Generator {
+  if (!template.fileName) {
     throw new Error(
-      `There is no "${orphan}" generator for the template of that name. ` +
-        `Available: ${[...ids].join(', ')}. ` +
-        'Prefix the file with `_` if it is not meant to be a template.',
+      `The template for "${id}" declares no fileName, and there is no "${id}" ` +
+        `generator to inherit one from. Available: ${available.join(', ')}. ` +
+        'Rename the file, give it a fileName, or prefix it with `_` if it is ' +
+        'not meant to be a template.',
     )
   }
 
-  return generators.map((generator) => {
-    const render = templates[generator.id]
-    return render ? { ...generator, render } : generator
-  })
+  return {
+    id,
+    description: template.description ?? `A ${id}`,
+    // The filename names the generator, so it is also the best guess at where
+    // that generator writes: `routes.ts` -> `src/routes`.
+    directory: template.directory ?? id,
+    fileName: template.fileName,
+    target: template.target,
+    render: template.render,
+  }
+}
+
+/**
+ * Fold each template into the generator list: over the generator of the same
+ * id, or as a new one.
+ *
+ * A file that overrides keeps its position, so composed runs execute in the
+ * order the built-ins declare; a file that declares appends.
+ */
+export function applyTemplates(
+  generators: Array<Generator>,
+  templates: Record<string, DeclaredTemplate>,
+): Array<Generator> {
+  const byId = new Map(generators.map((generator) => [generator.id, generator]))
+  const available = [...byId.keys()]
+
+  for (const [id, template] of Object.entries(templates)) {
+    const existing = byId.get(id)
+
+    byId.set(
+      id,
+      existing
+        ? { ...existing, ...declaredMeta(template), render: template.render }
+        : declareGenerator(id, template, available),
+    )
+  }
+
+  // Checked after the whole list is composed, because one template may target
+  // a generator another template declared.
+  for (const [id, template] of Object.entries(templates)) {
+    if (!template.target || byId.has(template.target)) continue
+    throw new Error(
+      `The template for "${id}" targets "${template.target}", which is not a ` +
+        `generator. Available: ${[...byId.keys()].join(', ')}.`,
+    )
+  }
+
+  return [...byId.values()]
 }
 
 /**
@@ -154,7 +224,7 @@ export function applyTemplates(
 export async function loadTemplates(
   directory: string,
   root: string,
-): Promise<Record<string, Template>> {
+): Promise<Record<string, DeclaredTemplate>> {
   const absolute = resolve(root, directory)
   if (!existsSync(absolute)) {
     throw new Error(

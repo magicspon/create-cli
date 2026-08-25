@@ -167,6 +167,39 @@ describe('resolveConfig', () => {
     expect(config.registry.has('nope')).toBe(false)
     expect(config.registry.find('route')?.description).toBe('a route')
   })
+
+  it('gives a generator naming an unconfigured directory key a path under src', () => {
+    // Without this a generator declared in a template file — which by design
+    // has no config entry — would write to the project root. (ADR 0006)
+    const config = resolveConfig(
+      { generators: [{ ...stub('route'), directory: 'routes' }] },
+      '/r',
+    )
+
+    expect(config.directories.routes).toBe('src/routes')
+  })
+
+  it('leaves a directory that was written as a path alone', () => {
+    const config = resolveConfig(
+      { generators: [{ ...stub('route'), directory: 'app/routes' }] },
+      '/r',
+    )
+
+    // Never `src/app/routes`.
+    expect(config.directories['app/routes']).toBe('app/routes')
+  })
+
+  it('still lets the config override a key a generator invented', () => {
+    const config = resolveConfig(
+      {
+        generators: [{ ...stub('route'), directory: 'routes' }],
+        directories: { routes: 'app/pages' },
+      },
+      '/r',
+    )
+
+    expect(config.directories.routes).toBe('app/pages')
+  })
 })
 
 describe('sourceRoot', () => {
@@ -292,6 +325,52 @@ describe('loadConfig', () => {
       'hook',
       'test',
     ])
+  })
+
+  it('discovers scaffold/templates with no config file at all', async () => {
+    // The whole point of ADR 0006: a project adds a generator by adding a file.
+    writePackage(root)
+    mkdirSync(join(root, 'scaffold', 'templates'), { recursive: true })
+    writeFileSync(
+      join(root, 'scaffold', 'templates', 'route.ts'),
+      `export default {
+         description: 'A route module',
+         directory: 'routes',
+         fileName: (c) => c.kebabName + '.route.ts',
+         render: (c) => 'export const ' + c.pascalName + 'Route = {}\\n',
+       }\n`,
+    )
+
+    const config = await loadConfig(root)
+
+    expect(config.configFile).toBeNull()
+    expect(config.registry.has('route')).toBe(true)
+    // Reached `src/routes` without anybody configuring a directory.
+    expect(config.directories.routes).toBe('src/routes')
+  })
+
+  it('is unaffected by a scaffold/templates that does not exist', async () => {
+    writePackage(root)
+
+    const config = await loadConfig(root)
+
+    expect(config.registry.all.map((g) => g.id)).toEqual([
+      'component',
+      'hook',
+      'test',
+    ])
+  })
+
+  it('still refuses a configured template directory that is missing', async () => {
+    // Only ever a typo or a directory not created yet. The conventional one is
+    // a lookup; a named one is a promise.
+    writePackage(root)
+    writeFileSync(
+      join(root, 'scaffold.config.ts'),
+      `export default { templates: 'nope/templates' }\n`,
+    )
+
+    await expect(loadConfig(root)).rejects.toThrow(/does not exist/)
   })
 
   it('finds the config file from a nested working directory', async () => {

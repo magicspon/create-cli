@@ -264,14 +264,42 @@ go-to-definition and refactoring, because it is code rather than a string in a t
 
 ### A first generator
 
+Add one file. There is no config file and nothing to register:
+
+```ts
+// scaffold/templates/route.ts
+import { defineTemplate } from '@magicspon/scaffold'
+
+export default defineTemplate(
+  {
+    description: 'A route module',
+    directory: 'routes',
+    fileName: ({ kebabName }) => `${kebabName}.route.ts`,
+  },
+  ({ kebabName, pascalName }) =>
+    `export const ${pascalName}Route = {\n` +
+    `  path: '/${kebabName}',\n` +
+    `}\n`,
+)
+```
+
+```bash
+pnpm scaffold route checkout
+# + src/routes/checkout.route.ts
+```
+
+`route` now appears in `--help`, in the wizard, and in every other generator's `--with`. The file's
+name is the generator's name — see [a directory of templates](#a-directory-of-templates) for the
+rest of the rules.
+
+You can also declare one in `scaffold.config.ts`, which is the better home for a generator you
+build programmatically or share from a package:
+
 ```ts
 // scaffold.config.ts
 import { defineConfig } from '@magicspon/scaffold'
 
 export default defineConfig({
-  directories: {
-    routes: 'src/routes',
-  },
   generators: [
     {
       id: 'route',
@@ -287,24 +315,16 @@ export default defineConfig({
 })
 ```
 
-```bash
-pnpm scaffold route checkout
-# + src/routes/checkout.route.ts
-```
-
-`route` now appears in `--help`, in the wizard, and in every other generator's `--with`. There is
-no second place to register it.
-
 ### The generator API
 
-| Field         | Required | Meaning                                                                                                        |
-| ------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `id`          | yes      | The subcommand name. Reuse a built-in id to [replace it](#replacing-a-built-in)                                |
-| `description` | yes      | Shown in `--help` and in the wizard                                                                            |
-| `directory`   | yes      | **A key into `directories`**, not a path. Unconfigured keys fall back to the project root                      |
-| `fileName`    | yes      | `(casings) => string`, relative to the resolved directory                                                      |
-| `render`      | yes      | `(context) => string`, the file's full contents                                                                |
-| `target`      | no       | The id of a generator whose output this one writes _beside_ — see [targets](#writing-against-an-existing-file) |
+| Field         | Required | Meaning                                                                                                                                       |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`          | yes      | The subcommand name. Reuse a built-in id to [replace it](#replacing-a-built-in). In a template file it is the filename, and there is no field |
+| `description` | yes      | Shown in `--help` and in the wizard                                                                                                           |
+| `directory`   | yes      | **A key into `directories`**, not a path — a key you have not configured resolves to `src/<key>`. Write a `/` in it to mean a path            |
+| `fileName`    | yes      | `(casings) => string`, relative to the resolved directory                                                                                     |
+| `render`      | yes      | `(context) => string`, the file's full contents                                                                                               |
+| `target`      | no       | The id of a generator whose output this one writes _beside_ — see [targets](#writing-against-an-existing-file)                                |
 
 `directory` being a key rather than a path is what lets one config move every generator's output at
 once, and what makes `--dir` mean the same thing for your generators as for the built-in ones.
@@ -400,16 +420,8 @@ export function ${pascalName}({ className, ...props }: ${pascalName}Props) {
 ### A directory of templates
 
 Reusing an id means restating the generator's description, directory and `fileName` in order to
-change the one function you cared about. If the render is all you want to replace, point `templates`
-at a directory and name each file after the generator it overrides:
-
-```ts
-// scaffold.config.ts
-export default defineConfig({
-  templates: 'scaffold/templates',
-  imports: { utils: '#/lib/utils' },
-})
-```
+change the one function you cared about. Put a file in `scaffold/templates` instead and name it
+after the generator it overrides — no config file needed:
 
 ```ts
 // scaffold/templates/component.ts
@@ -436,25 +448,71 @@ $ pnpm scaffold component Card
 
 The filename is the whole declaration — there is nothing to register:
 
-| File                     | Effect                                                  |
-| ------------------------ | ------------------------------------------------------- |
-| `templates/component.ts` | Replaces the `component` generator's render             |
-| `templates/hook-test.ts` | Replaces `hook-test`'s, once the `browser` preset is on |
-| `templates/route.ts`     | Replaces the render of a `route` **you** declared       |
-| `templates/_banner.ts`   | Not a template — a helper your templates import         |
+| File                     | Effect                                                 |
+| ------------------------ | ------------------------------------------------------ |
+| `templates/component.ts` | Overrides the `component` generator                    |
+| `templates/hook-test.ts` | Overrides `hook-test`, once the `browser` preset is on |
+| `templates/route.ts`     | Declares a `route` generator, if you have no `route`   |
+| `templates/_banner.ts`   | Not a template — a helper your templates import        |
 
-**Only `render` is replaced.** `component` keeps its id, its description, its `src/components`
-default and its `.tsx` filename, so it stays exactly where it was in `--help`, in `--with` and in
-the wizard. If you want a different filename or directory, you are describing a different generator
-— declare it in [`generators`](#a-first-generator) instead.
+Exporting a bare function replaces `render` and nothing else, so `component` keeps its description,
+its `src/components` default and its `.tsx` filename, and stays where it was in `--help`, in
+`--with` and in the wizard.
 
-**A file that matches no generator refuses the run.** `componant.ts` skipped quietly would still
-scaffold, just from the built-in template, and it would look like a success:
+`scaffold/templates` is found without being configured. Point `templates` somewhere else if you
+prefer — a directory you name that does not exist refuses the run, since that can only be a typo.
+
+#### A generator in one file
+
+Pass a config first and the file declares the rest of its generator. If nothing has that id yet,
+this is all it takes to add one — there is no `generators` array and no config file:
+
+```ts
+// scaffold/templates/route.ts
+import { defineTemplate } from '@magicspon/scaffold'
+
+export default defineTemplate(
+  {
+    description: 'A route module',
+    directory: 'routes',
+    fileName: ({ kebabName }) => `${kebabName}.route.ts`,
+  },
+  ({ kebabName, pascalName }) =>
+    `export const ${pascalName}Route = {\n  path: '/${kebabName}',\n}\n`,
+)
+```
+
+```
+$ pnpm scaffold route "user profile"
++ src/routes/user-profile.route.ts
+```
+
+There is no `id`: the filename is the id, so a generator has one name in one place. Renaming a
+generator is renaming a file.
+
+`directory` is a key into [`directories`](#configuration-reference), and a key you have not configured resolves
+to `src/<key>` — which is why `routes` reached `src/routes` above with nothing set. Write a `/` in
+it (`app/routes`) and it is taken as a path instead.
+
+Every field is optional over an existing generator, so you can change just the placement and keep
+the built-in render's neighbours:
+
+```ts
+// scaffold/templates/component.ts — same render, different filename
+export default defineTemplate(
+  { fileName: ({ pascalName }) => `${pascalName}.tsx` },
+  myRender,
+)
+```
+
+**A file that neither overrides nor declares refuses the run.** `componant.ts` skipped quietly
+would still scaffold, just from the built-in template, and it would look like a success:
 
 ```
 $ pnpm scaffold component Card
-✖ There is no "componant" generator for the template of that name.
-  Available: component, hook, test. Prefix the file with `_` if it is not
+✖ The template for "componant" declares no fileName, and there is no
+  "componant" generator to inherit one from. Available: component, hook, test.
+  Rename the file, give it a fileName, or prefix it with `_` if it is not
   meant to be a template.
 ```
 
@@ -540,8 +598,8 @@ export function renderRoute({
 `Generator`, `Template`, `TemplateContext`, `NameCasings` and `ScaffoldUserConfig` are all exported
 for this, along with `defineTemplate` for a file that is nothing but a template.
 
-> If you are only replacing renders, [a template directory](#a-directory-of-templates) does this
-> without the config file having to name each file.
+> [A template directory](#a-directory-of-templates) does the same thing without the config file
+> having to name each generator at all — usually what you want.
 
 > The import above is extensionless, which is what typechecks under
 > `moduleResolution: "bundler"` — the setting most React projects use. Under `node16`/`nodenext`,
@@ -554,16 +612,16 @@ for this, along with `defineTemplate` for a file that is nothing but a template.
 
 Every field is optional.
 
-| Field         | Default                                  | Meaning                                                          |
-| ------------- | ---------------------------------------- | ---------------------------------------------------------------- |
-| `directories` | `src/components`, `src/hooks`, `src/lib` | Where each generator writes, keyed by its `directory`            |
-| `presets`     | `[]`                                     | Built-in groups to switch on                                     |
-| `generators`  | `[]`                                     | Your own generators                                              |
-| `templates`   | unset                                    | Directory of templates, named after the generator each overrides |
-| `disable`     | `[]`                                     | Generator ids to switch off                                      |
-| `imports`     | `{}`                                     | Import specifiers your templates reference                       |
-| `protect`     | `[]`                                     | Directories no generator may write into                          |
-| `format`      | `[]`                                     | Commands run over written files                                  |
+| Field         | Default                                  | Meaning                                                                                              |
+| ------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `directories` | `src/components`, `src/hooks`, `src/lib` | Where each generator writes, keyed by its `directory`. A key you do not name resolves to `src/<key>` |
+| `presets`     | `[]`                                     | Built-in groups to switch on                                                                         |
+| `generators`  | `[]`                                     | Your own generators                                                                                  |
+| `templates`   | `scaffold/templates` when it exists      | Directory of templates, named after the generator each one overrides or declares                     |
+| `disable`     | `[]`                                     | Generator ids to switch off                                                                          |
+| `imports`     | `{}`                                     | Import specifiers your templates reference                                                           |
+| `protect`     | `[]`                                     | Directories no generator may write into                                                              |
+| `format`      | `[]`                                     | Commands run over written files                                                                      |
 
 ### `protect`
 

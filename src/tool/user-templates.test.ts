@@ -110,22 +110,41 @@ describe('templateFilesIn', () => {
 })
 
 describe('templateFrom', () => {
-  it('takes the default export', () => {
-    const render = templateFrom({ default: () => 'from default' }, 'c.ts')
+  it('takes a bare default export as the render-only form', () => {
+    const template = templateFrom({ default: () => 'from default' }, 'c.ts')
 
-    expect(render(context)).toBe('from default')
+    expect(template.render(context)).toBe('from default')
+    expect(template.fileName).toBeUndefined()
   })
 
   it('takes a named `render`, so a template moved out of a config still works', () => {
-    const render = templateFrom({ render: () => 'from render' }, 'c.ts')
+    const template = templateFrom({ render: () => 'from render' }, 'c.ts')
 
-    expect(render(context)).toBe('from render')
+    expect(template.render(context)).toBe('from render')
   })
 
-  it('names the file when it exports no function at all', () => {
+  it('takes a declaration, so a file can carry its own config', () => {
+    const declared = {
+      directory: 'routes',
+      fileName: () => 'home.route.ts',
+      render: () => 'from declaration',
+    }
+
+    const template = templateFrom({ default: declared }, 'route.ts')
+
+    expect(template.render(context)).toBe('from declaration')
+    expect(template.directory).toBe('routes')
+  })
+
+  it('names the file when it exports no template at all', () => {
     expect(() => templateFrom({ nope: 1 }, 'templates/component.ts')).toThrow(
-      /templates\/component\.ts exports no template function/,
+      /templates\/component\.ts exports no template/,
     )
+  })
+
+  it('rejects an object that carries config but no render', () => {
+    expect(() => templateFrom({ default: { directory: 'routes' } }, 'r.ts')) //
+      .toThrow(/exports no template/)
   })
 })
 
@@ -133,22 +152,37 @@ describe('applyTemplates', () => {
   it('replaces the render of the generator with a matching id', () => {
     const [component, hook] = applyTemplates(
       [stub('component'), stub('hook')],
-      { component: () => '// mine' },
+      { component: { render: () => '// mine' } },
     )
 
     expect(component?.render(context)).toBe('// mine')
     expect(hook?.render(context)).toBe('// built-in hook')
   })
 
-  it('replaces only the render, leaving placement alone', () => {
-    // A project wanting a different filename or directory is describing a
-    // different generator, and says so in `generators`.
+  it('replaces only the render when the file declares nothing else', () => {
+    // The inherited placement is the point: a built-in whose fileName changes
+    // must not leave every overriding project emitting the old name.
     const [component] = applyTemplates([stub('component')], {
-      component: () => '// mine',
+      component: { render: () => '// mine' },
     })
 
     expect(component?.fileName(casings)).toBe('card.ts')
     expect(component?.directory).toBe('components')
+    expect(component?.description).toBe('a component')
+  })
+
+  it('replaces the fields a file does declare, and inherits the rest', () => {
+    const [component] = applyTemplates([stub('component')], {
+      component: {
+        directory: 'ui',
+        fileName: ({ pascalName }) => `${pascalName}.tsx`,
+        render: () => '// mine',
+      },
+    })
+
+    expect(component?.directory).toBe('ui')
+    expect(component?.fileName(casings)).toBe('Card.tsx')
+    // Not declared, so still the built-in's.
     expect(component?.description).toBe('a component')
   })
 
@@ -161,17 +195,75 @@ describe('applyTemplates', () => {
   })
 
   it('overrides a generator the project defined itself, not just a built-in', () => {
-    const [route] = applyTemplates([stub('route')], { route: () => '// mine' })
+    const [route] = applyTemplates([stub('route')], {
+      route: { render: () => '// mine' },
+    })
 
     expect(route?.render(context)).toBe('// mine')
   })
 
-  it('throws on a template matching no generator, naming what is available', () => {
-    // Silently skipping it would read as the override not working — the file
-    // still lands, it is just the wrong file.
+  it('declares a generator for a filename naming no existing one', () => {
+    const generators = applyTemplates([stub('component')], {
+      route: {
+        description: 'A route module',
+        directory: 'routes',
+        fileName: ({ kebabName }) => `${kebabName}.route.ts`,
+        render: () => '// route',
+      },
+    })
+
+    // Appended, so composed runs still execute the built-ins in their order.
+    expect(generators.map((generator) => generator.id)).toEqual([
+      'component',
+      'route',
+    ])
+    expect(generators[1]?.fileName(casings)).toBe('card.route.ts')
+    expect(generators[1]?.description).toBe('A route module')
+  })
+
+  it('defaults a declared generator’s directory to its id', () => {
+    const [, route] = applyTemplates([stub('component')], {
+      routes: { fileName: () => 'x.ts', render: () => '' },
+    })
+
+    expect(route?.directory).toBe('routes')
+    expect(route?.description).toBe('A routes')
+  })
+
+  it('refuses a declared generator with no fileName, naming what is available', () => {
+    // This is what still catches `componant.ts`: there is no `componant`
+    // generator to inherit a fileName from, so the run stops rather than
+    // scaffolding the built-in and looking exactly like success.
     expect(() =>
-      applyTemplates([stub('component')], { componant: () => '' }),
-    ).toThrow(/no "componant" generator.*Available: component/s)
+      applyTemplates([stub('component')], { componant: { render: () => '' } }),
+    ).toThrow(/no "componant" generator to inherit.*Available: component/s)
+  })
+
+  it('refuses a template targeting something that is not a generator', () => {
+    expect(() =>
+      applyTemplates([stub('component')], {
+        story: {
+          fileName: () => 'x.ts',
+          target: 'componant',
+          render: () => '',
+        },
+      }),
+    ).toThrow(/targets "componant", which is not a generator/)
+  })
+
+  it('lets one template target a generator another template declared', () => {
+    // Checked after the whole list is composed, so declaration order in the
+    // directory cannot decide whether a target resolves.
+    expect(() =>
+      applyTemplates([stub('component')], {
+        story: {
+          fileName: () => 'x.stories.tsx',
+          target: 'route',
+          render: () => '',
+        },
+        route: { fileName: () => 'x.route.ts', render: () => '' },
+      }),
+    ).not.toThrow()
   })
 })
 
@@ -184,7 +276,26 @@ describe('loadTemplates', () => {
 
     const templates = await loadTemplates(directory, root)
 
-    expect(templates.component?.(context)).toBe('export const Card = 1\n')
+    expect(templates.component?.render(context)).toBe('export const Card = 1\n')
+  })
+
+  it('loads a file that declares its own generator config', async () => {
+    const directory = writeTemplates({
+      'route.ts': `export default {
+           description: 'A route module',
+           directory: 'routes',
+           fileName: (c) => c.kebabName + '.route.ts',
+           render: (c) => 'export const ' + c.pascalName + 'Route = {}\\n',
+         }\n`,
+    })
+
+    const templates = await loadTemplates(directory, root)
+
+    expect(templates.route?.directory).toBe('routes')
+    expect(templates.route?.fileName?.(casings)).toBe('card.route.ts')
+    expect(templates.route?.render(context)).toBe(
+      'export const CardRoute = {}\n',
+    )
   })
 
   it('skips the files that are not templates', async () => {
@@ -208,7 +319,7 @@ describe('loadTemplates', () => {
 
     const templates = await loadTemplates(directory, root)
 
-    expect(templates.component?.(context)).toBe('// generated\n')
+    expect(templates.component?.render(context)).toBe('// generated\n')
   })
 
   it('returns nothing for a directory that holds no templates', async () => {
