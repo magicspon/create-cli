@@ -21,6 +21,7 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "packageManager": "pnpm@11.21.0",
   "bin": {
     "scaffold": "./dist/index.mjs"
   },

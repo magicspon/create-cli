@@ -22,9 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # No `version` input: the action reads `packageManager` from package.json,
+      # which is the single place the pnpm version is written.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v5
         with:
