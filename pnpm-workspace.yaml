@@ -1,6 +1,8 @@
 packages:
   - '.'
 
+minimumReleaseAge: 4320
+
 # Both arrive via vitest's toolchain and are native binaries, so their install
 # scripts have to run or the test suite cannot start.
 allowBuilds:

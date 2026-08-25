@@ -31,7 +31,7 @@ export type { ScaffoldConfig, ScaffoldUserConfig } from './tool/config.ts'
  * Type a `scaffold.config.ts` without annotating it.
  *
  * ```ts
- * import { defineConfig } from '@magicspon/scaffold'
+ * import { defineConfig } from '@magicspon/create-cli'
  *
  * export default defineConfig({
  *   presets: ['storybook'],

@@ -1,4 +1,4 @@
-# Context: @magicspon/scaffold
+# Context: @magicspon/create-cli
 
 The domain model for this project — the words we use, what they mean, and the rules that must hold.
 

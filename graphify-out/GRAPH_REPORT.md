@@ -60,11 +60,11 @@
 2. `Generator` - 14 edges
 3. `scripts` - 13 edges
 4. `plan` - 13 edges
-5. `@magicspon/scaffold` - 12 edges
+5. `@magicspon/create-cli` - 12 edges
 6. `pickTarget()` - 11 edges
 7. `ScaffoldConfig` - 10 edges
 8. `unwrap()` - 10 edges
-9. `@magicspon/scaffold` - 10 edges
+9. `@magicspon/create-cli` - 10 edges
 10. `Adding custom templates` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -149,7 +149,7 @@ Nodes (10): access, baseBranch, changelog, commit, fixed, format, ignore, linked
 
 ### Community 30 - "AGENTS.md Project Conventions"
 Cohesion: 0.18
-Nodes (10): Architecture in one paragraph, Commands, Comments, Communication, Conventions, fallow, graphify, @magicspon/scaffold (+2 more)
+Nodes (10): Architecture in one paragraph, Commands, Comments, Communication, Conventions, fallow, graphify, @magicspon/create-cli (+2 more)
 
 ### Community 31 - "ESLint Config Module"
 Cohesion: 0.22
@@ -189,7 +189,7 @@ Nodes (40): load(), renderComponent(), renderHook(), renderHookTest(), renderMsw
 
 ### Community 54 - "Community 54"
 Cohesion: 0.29
-Nodes (6): Boundaries, Context: @magicspon/scaffold, Decisions, Glossary, Invariants, Scaffolding
+Nodes (6): Boundaries, Context: @magicspon/create-cli, Decisions, Glossary, Invariants, Scaffolding
 
 ### Community 55 - "Community 55"
 Cohesion: 0.33

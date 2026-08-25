@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and PRDs for this repo live as GitHub issues on `magicspon/scaffold`. Use the `gh` CLI for
+Issues and PRDs for this repo live as GitHub issues on `magicspon/create-cli`. Use the `gh` CLI for
 all operations.
 
 ## Conventions

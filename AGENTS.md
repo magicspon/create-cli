@@ -1,4 +1,4 @@
-# @magicspon/scaffold
+# @magicspon/create-cli
 
 A published CLI that scaffolds files from generators a project configures in TypeScript. This repo
 is the tool itself — there is no app here.

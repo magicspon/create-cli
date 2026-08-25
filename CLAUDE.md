@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Issues live in GitHub Issues on `magicspon/scaffold`, managed with the `gh` CLI. See
+Issues live in GitHub Issues on `magicspon/create-cli`, managed with the `gh` CLI. See
 `docs/agents/issue-tracker.md`.
 
 ### Triage labels

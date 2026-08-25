@@ -270,7 +270,7 @@ describe('applyTemplates', () => {
 describe('loadTemplates', () => {
   it('loads a TypeScript template file, typed against the context it receives', async () => {
     const directory = writeTemplates({
-      'component.ts': `import type { TemplateContext } from '@magicspon/scaffold'
+      'component.ts': `import type { TemplateContext } from '@magicspon/create-cli'
          export default (c: TemplateContext) => 'export const ' + c.pascalName + ' = 1\\n'\n`,
     })
 

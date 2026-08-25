@@ -2989,14 +2989,14 @@
       "norm_label": "agents.md"
     },
     {
-      "label": "@magicspon/scaffold",
+      "label": "@magicspon/create-cli",
       "file_type": "document",
       "source_file": "AGENTS.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_magicspon_scaffold",
       "community": 30,
-      "norm_label": "@magicspon/scaffold"
+      "norm_label": "@magicspon/create-cli"
     },
     {
       "label": "Architecture in one paragraph",
@@ -3149,14 +3149,14 @@
       "norm_label": "context.md"
     },
     {
-      "label": "Context: @magicspon/scaffold",
+      "label": "Context: @magicspon/create-cli",
       "file_type": "document",
       "source_file": "CONTEXT.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "context_context_magicspon_scaffold",
       "community": 54,
-      "norm_label": "context: @magicspon/scaffold"
+      "norm_label": "context: @magicspon/create-cli"
     },
     {
       "label": "Glossary",
@@ -3219,14 +3219,14 @@
       "norm_label": "readme.md"
     },
     {
-      "label": "@magicspon/scaffold",
+      "label": "@magicspon/create-cli",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "readme_magicspon_scaffold",
       "community": 6,
-      "norm_label": "@magicspon/scaffold"
+      "norm_label": "@magicspon/create-cli"
     },
     {
       "label": "Getting started",

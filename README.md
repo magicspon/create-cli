@@ -1,4 +1,7 @@
-# @magicspon/scaffold
+[![CI](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml)
+[![Fallow](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml) [![Release](https://github.com/magicspon/create-cli/actions/workflows/release.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/release.yaml) [![Renovate](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml)
+
+# @magicspon/create-cli
 
 A file scaffolder you configure in TypeScript. It ships a small set of generators, and your project
 adds its own — templates are typechecked functions in your repo, not strings in a template
@@ -23,16 +26,16 @@ render: ({ pascalNam }) => `...`
 ### 1. Install
 
 ```bash
-pnpm add -D @magicspon/scaffold
+pnpm add -D @magicspon/create-cli
 ```
 
 <details>
 <summary>npm / yarn / bun</summary>
 
 ```bash
-npm install -D @magicspon/scaffold
-yarn add -D @magicspon/scaffold
-bun add -d @magicspon/scaffold
+npm install -D @magicspon/create-cli
+yarn add -D @magicspon/create-cli
+bun add -d @magicspon/create-cli
 ```
 
 </details>
@@ -102,7 +105,7 @@ You only need one to change directories, switch on a [preset](#using-presets), o
 
 ```ts
 // scaffold.config.ts
-import { defineConfig } from '@magicspon/scaffold'
+import { defineConfig } from '@magicspon/create-cli'
 
 export default defineConfig({
   directories: {
@@ -183,7 +186,7 @@ missing would scaffold a file your project cannot execute.
 
 ```ts
 // scaffold.config.ts
-import { defineConfig } from '@magicspon/scaffold'
+import { defineConfig } from '@magicspon/create-cli'
 
 export default defineConfig({
   presets: ['storybook'],
@@ -268,7 +271,7 @@ Add one file. There is no config file and nothing to register:
 
 ```ts
 // scaffold/templates/route.ts
-import { defineTemplate } from '@magicspon/scaffold'
+import { defineTemplate } from '@magicspon/create-cli'
 
 export default defineTemplate(
   {
@@ -297,7 +300,7 @@ build programmatically or share from a package:
 
 ```ts
 // scaffold.config.ts
-import { defineConfig } from '@magicspon/scaffold'
+import { defineConfig } from '@magicspon/create-cli'
 
 export default defineConfig({
   generators: [
@@ -425,7 +428,7 @@ after the generator it overrides — no config file needed:
 
 ```ts
 // scaffold/templates/component.ts
-import { defineTemplate } from '@magicspon/scaffold'
+import { defineTemplate } from '@magicspon/create-cli'
 
 export default defineTemplate(
   ({ pascalName, imports }) => `import { cn } from '${imports.utils}'
@@ -469,7 +472,7 @@ this is all it takes to add one — there is no `generators` array and no config
 
 ```ts
 // scaffold/templates/route.ts
-import { defineTemplate } from '@magicspon/scaffold'
+import { defineTemplate } from '@magicspon/create-cli'
 
 export default defineTemplate(
   {
@@ -567,7 +570,7 @@ one-line fix; parsing the target is neither.
 
 ```ts
 // scaffold.config.ts
-import { defineConfig } from '@magicspon/scaffold'
+import { defineConfig } from '@magicspon/create-cli'
 import { renderRoute } from './scaffold/route'
 
 export default defineConfig({
@@ -585,7 +588,7 @@ export default defineConfig({
 
 ```ts
 // scaffold/route.ts
-import type { TemplateContext } from '@magicspon/scaffold'
+import type { TemplateContext } from '@magicspon/create-cli'
 
 export function renderRoute({
   kebabName,

@@ -14,7 +14,7 @@ So a template file now declares whatever it wants of its generator, alongside it
 
 ```ts
 // scaffold/templates/route.ts
-import { defineTemplate } from '@magicspon/scaffold'
+import { defineTemplate } from '@magicspon/create-cli'
 
 export default defineTemplate(
   {

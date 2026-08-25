@@ -45,5 +45,5 @@ jobs:
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
-          RENOVATE_REPOSITORIES: magicspon/scaffold
+          RENOVATE_REPOSITORIES: magicspon/create-cli
           LOG_LEVEL: ${{ inputs.logLevel || 'info' }}

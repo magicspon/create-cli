@@ -13,8 +13,10 @@ export default defineConfig({
   format: 'esm',
   platform: 'node',
   target: 'node20.19',
-  // Types ship because `defineConfig` is only worth importing for them.
-  dts: true,
+  // Types ship because `defineConfig` is only worth importing for them — and
+  // only for that entry, because nothing imports the binary, so a `.d.mts`
+  // beside it is an empty file the package would ship forever.
+  dts: { entry: ['src/define-config.ts'] },
   clean: true,
   // Runtime deps are resolved from the consumer's node_modules rather than
   // inlined; bundling them would ship a second copy of each per install.
