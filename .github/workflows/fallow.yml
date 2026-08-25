@@ -66,8 +66,13 @@ jobs:
             cat fallow-report.md
           fi
 
+      # `conclusion != skipped` keeps a failure in an earlier step (install, say)
+      # from stacking a missing-file error on top of the real one.
       - name: Write report to job summary
-        if: always() && steps.audit.outputs.exit_code != '2'
+        if: >-
+          always()
+          && steps.audit.conclusion != 'skipped'
+          && steps.audit.outputs.exit_code != '2'
         run: cat fallow-report.md >> "$GITHUB_STEP_SUMMARY"
 
       # Sticky comment keyed on fallow's own marker, so each run edits the same
@@ -77,6 +82,7 @@ jobs:
           always()
           && github.event_name == 'pull_request'
           && github.event.pull_request.head.repo.fork == false
+          && steps.audit.conclusion != 'skipped'
           && steps.audit.outputs.exit_code != '2'
         continue-on-error: true
         env:
@@ -101,5 +107,7 @@ jobs:
           case "${{ steps.audit.outputs.exit_code }}" in
             0) echo "No new issues introduced by this PR." ;;
             1) echo "::error::fallow found issues introduced by this PR - see the job summary"; exit 1 ;;
+            # Empty means the audit step never ran, so the real error is upstream.
+            "") echo "::error::fallow did not run - an earlier step failed"; exit 1 ;;
             *) exit 2 ;;
           esac

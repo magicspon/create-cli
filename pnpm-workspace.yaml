@@ -8,3 +8,8 @@ minimumReleaseAge: 4320
 allowBuilds:
   esbuild: true
   lightningcss: true
+  # An auto-installed optional peer of @vitest/mocker. Its postinstall only sets
+  # up the browser service worker, which this node-only suite never loads, so it
+  # is denied rather than approved. The entry has to be here either way: pnpm 11
+  # fails a --frozen-lockfile install on any build script it has no ruling for.
+  msw: false

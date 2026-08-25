@@ -71,7 +71,7 @@
     "oxlint-tsgolint": "^7.0.2001",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "vitest": "latest",
+    "vitest": "^4.1.11",
     "yalc": "1.0.0-pre.53"
   }
 }
