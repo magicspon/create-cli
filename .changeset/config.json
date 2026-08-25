@@ -9,7 +9,7 @@
       "repo": "magicspon/create-cli"
     }
   ],
-  "commit": true,
+  "commit": false,
   "ignore": [],
   "fixed": [],
   "linked": [],
