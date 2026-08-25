@@ -1,7 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "packageManager": "pnpm",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
   "commitMessageTopic": "{{depName}}",
@@ -13,60 +12,63 @@
 
   "rangeStrategy": "bump",
 
-  "postUpgradeTasks": {
-    "commands": ["pnpm update --changeset"],
-    "fileFilters": [".changeset/**"],
-    "executionMode": "branch"
+  "minimumReleaseAge": "3 days",
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "commitMessageTopic": "lock file",
+    "schedule": []
   },
+
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "fallow is installed as a global CLI in its workflow, so no manifest declares it and no other manager can see the pin.",
+      "managerFilePatterns": ["/^\\.github/workflows/fallow\\.yml$/"],
+      "matchStrings": ["npm install -g fallow@(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "fallow",
+      "datasourceTemplate": "npm"
+    }
+  ],
 
   "packageRules": [
     {
-      "groupName": "TanStack Start",
-      "matchPackageNames": [
-        "@tanstack/react-start",
-        "@tanstack/react-router",
-        "@tanstack/react-router-devtools",
-        "@tanstack/react-router-ssr-query",
-        "@tanstack/react-query",
-        "@tanstack/react-query-devtools",
-        "@tanstack/react-devtools",
-        "@tanstack/devtools-vite",
-        "@tanstack/react-store",
-        "@tanstack/store",
-        "@tanstack/router-cli"
-      ]
+      "description": "The Renovate action pins a full semver tag because it publishes no floating major, so it can only stay current if Renovate updates it here.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
     },
     {
-      "groupName": "React",
-      "matchPackageNames": [
-        "react",
-        "react-dom",
-        "@types/react",
-        "@types/react-dom"
-      ]
+      "description": "One toolchain, released in lockstep. oxfmt is pre-1.0, so its minor bumps arrive as majors and land in their own PR.",
+      "groupName": "oxc toolchain",
+      "matchPackageNames": ["oxfmt", "oxlint", "oxlint-tsgolint"]
     },
     {
-      "groupName": "Vite",
-      "matchPackageNames": ["vite", "@vitejs/plugin-react"]
+      "groupName": "changesets",
+      "matchPackageNames": ["@changesets/**"]
     },
     {
-      "groupName": "Vitest",
-      "matchPackageNames": [
-        "vitest",
-        "@vitest/browser-playwright",
-        "@vitest/coverage-v8"
-      ]
+      "groupName": "commitlint",
+      "matchPackageNames": ["@commitlint/**"]
     },
     {
-      "groupName": "Storybook",
-      "matchPackageNames": [
-        "storybook",
-        "@storybook/addon-a11y",
-        "@storybook/addon-docs",
-        "@storybook/addon-mcp",
-        "@storybook/addon-vitest",
-        "@storybook/tanstack-react"
-      ]
+      "description": "The unjs trio the tool is built on: config loading, CLI parsing and TS runtime.",
+      "groupName": "unjs",
+      "matchPackageNames": ["c12", "citty", "jiti"]
+    },
+    {
+      "description": "The types have to describe the oldest runtime in `engines`, not the newest release, or the build accepts APIs that are missing at run time.",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<23"
+    },
+    {
+      "description": "The only published yalc release is a prerelease, so the exact pin is deliberate.",
+      "matchPackageNames": ["yalc"],
+      "enabled": false
+    },
+    {
+      "description": "`engines.node` is the support floor this package promises its consumers. Raising it drops runtimes, which is a release decision rather than a dependency update.",
+      "matchDepTypes": ["engines"],
+      "enabled": false
     }
   ]
 }
