@@ -42,7 +42,7 @@ jobs:
       # Pinned so a fallow release cannot change the gate under you.
       # Bump deliberately; check `fallow --version` locally first.
       - name: Install fallow
-        run: npm install -g fallow@2.91.0
+        run: npm install -g fallow@3.20.0
 
       - name: Run fallow audit
         id: audit
