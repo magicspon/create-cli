@@ -1,4 +1,5 @@
 [![CI](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml)
 [![Fallow](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml) [![Release](https://github.com/magicspon/create-cli/actions/workflows/release.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/release.yaml) [![Renovate](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml)
 
 # @magicspon/create-cli
@@ -632,8 +633,21 @@ scaffold kit new wibble
 
 ```
 + /Users/you/.scaffold/wibble
+  component.ts, hook.ts, test.ts
   scaffold component Card --kit wibble
   install in /Users/you/.scaffold/wibble to typecheck its templates
+```
+
+A new kit arrives with a copy of the built-in core templates — the real ones, comments and all — so
+you start by editing what the tool already emits rather than from an empty directory. Each copy
+spells its generator out in full, which is what lets it declare that generator in a project that
+never had it as well as override one that did.
+
+The presets come only when you ask, because a kit applies to every project that adopts it and a
+`story.ts` you did not ask for would hand a project with no Storybook a `story` generator:
+
+```bash
+scaffold kit new wibble --preset storybook --preset msw
 ```
 
 That directory is exactly a template directory — the same files, the same rules as
@@ -684,7 +698,7 @@ export default ({ pascalName }) => `// ${pascalName}, our way\n`
 
 ### Typechecking a kit
 
-`scaffold kit new` writes a `package.json` and a `tsconfig.json` alongside the starter template. The
+`scaffold kit new` writes a `package.json` and a `tsconfig.json` alongside the copied templates. The
 kit **runs** without installing anything — `@magicspon/create-cli` resolves from wherever the CLI
 itself is installed — but an editor needs the real dependency to typecheck it:
 

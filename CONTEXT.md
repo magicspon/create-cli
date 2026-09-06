@@ -107,6 +107,9 @@ will overwrite it — `src/components/ui` under shadcn, say. Empty by default.
   whole and override the one generator that does not fit.
 - `kit` is not an available generator id. It names the management subcommand, and a generator would
   shadow it.
+- A new kit starts as a copy of the built-in core templates, and of a preset's only when
+  `kit new --preset` names it. A kit applies to every project that adopts it, so a preset template
+  nobody asked for would give a project a generator for a runner it does not have.
 
 ## Boundaries
 

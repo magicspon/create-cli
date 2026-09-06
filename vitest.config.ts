@@ -31,6 +31,10 @@ export default defineConfig({
       // mean breaking the invariant that makes them dead, which asserts
       // nothing about behaviour — so they are excluded by name rather than
       // hidden inside a lowered threshold.
+      //
+      // The README's coverage badge is a static 100%, true because these four
+      // numbers make it so and CI fails below them. Lower one and the badge
+      // starts lying, so change it there too. (README, top of file)
       thresholds: {
         statements: 100,
         branches: 100,

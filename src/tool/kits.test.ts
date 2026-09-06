@@ -6,20 +6,34 @@
  * exists. (ADR 0007)
  */
 
-import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { builtInGenerators, presetNames } from './generators.ts'
 import {
   createKit,
   isKitInvocation,
   isKitName,
   kitFromArgv,
   kitsDirectory,
+  kitTemplateFile,
+  templateSourceDirectory,
   listKits,
   resolveKit,
   selfAlias,
 } from './kits.ts'
+
+/** The built-in template file a generator id is copied from. */
+function sourceOf(id: string): string {
+  return join(import.meta.dirname, '../templates', `${id}.ts`)
+}
 
 let home: string
 
@@ -149,13 +163,48 @@ describe('resolveKit', () => {
 
 describe('createKit', () => {
   it('seeds a kit that runs immediately and typechecks after an install', () => {
-    const path = createKit('wibble', home)
+    const { path, templates } = createKit('wibble', home)
 
-    // The starter template is what stops a brand new kit refusing the next run
-    // for being empty.
-    expect(existsSync(join(path, 'component.ts'))).toBe(true)
+    // The copied core is what stops a brand new kit refusing the next run for
+    // being empty.
+    expect(templates).toEqual(['component.ts', 'hook.ts', 'test.ts'])
     expect(existsSync(join(path, 'package.json'))).toBe(true)
     expect(existsSync(join(path, 'tsconfig.json'))).toBe(true)
+  })
+
+  it('copies a preset only when it is named', () => {
+    // A kit applies to every project that adopts it, so seeding `story.ts`
+    // unasked would hand a project with no Storybook a `story` generator.
+    // (ADR 0003)
+    const { templates } = createKit('wibble', home, ['storybook'])
+
+    expect(templates).toContain('story.ts')
+    expect(createKit('wobble', home).templates).not.toContain('story.ts')
+  })
+
+  it('copies the built-in template itself, not a paraphrase of it', () => {
+    const { path } = createKit('wibble', home)
+    const seeded = readFileSync(join(path, 'component.ts'), 'utf8')
+    const source = readFileSync(sourceOf('component'), 'utf8')
+
+    // Word for word, comments and all, so a seeded kit starts from what the
+    // tool would really have emitted and there is no second copy to drift.
+    const render = source.slice(source.indexOf('export function'))
+    expect(seeded).toContain(render)
+
+    // The one thing that has to change: a path inside this package is not
+    // resolvable from `~/.scaffold`. (ADR 0007)
+    expect(seeded).toContain("from '@magicspon/create-cli'")
+    expect(seeded).not.toContain('../tool/generators.ts')
+  })
+
+  it('refuses an unknown preset before it writes anything', () => {
+    // Otherwise the typo leaves a half-seeded kit the retry refuses as
+    // already existing.
+    expect(() => createKit('wibble', home, ['wobble'])).toThrow(
+      /no "wobble" preset/,
+    )
+    expect(existsSync(join(home, 'wibble'))).toBe(false)
   })
 
   it('refuses a kit that already exists rather than writing over it', () => {
@@ -166,6 +215,67 @@ describe('createKit', () => {
   it('refuses a name that could write outside the kits directory', () => {
     expect(() => createKit('../evil', home)).toThrow(/is not a kit name/)
     expect(existsSync(join(home, '..', 'evil'))).toBe(false)
+  })
+})
+
+describe('kitTemplateFile', () => {
+  it('spells the config out in full, so the file declares as well as overrides', () => {
+    // A kit is adopted by projects that never enabled the preset a template
+    // came from, and a filename naming no existing generator needs a
+    // `fileName` of its own. (ADR 0006)
+    const story = builtInGenerators(['storybook']).find(
+      (generator) => generator.id === 'story',
+    )
+    if (!story) throw new Error('the storybook preset declares no story')
+
+    const file = kitTemplateFile(story, 'export function renderStory() {}\n')
+
+    expect(file).toContain("description: 'A Storybook story for a component")
+    expect(file).toContain("directory: 'components'")
+    expect(file).toContain('fileName: ({ kebabName }) =>')
+    expect(file).toContain("target: 'component'")
+    expect(file).toContain('  renderStory,')
+  })
+
+  it('names a template it cannot find a render in', () => {
+    const [component] = builtInGenerators([])
+    if (!component) throw new Error('the core declares no generators')
+
+    expect(() => kitTemplateFile(component, 'const nothing = 1\n')).toThrow(
+      /exports no render function/,
+    )
+  })
+
+  it('finds the built-in templates in both shapes the package has', () => {
+    // Beside this module in development, and under `src/` from the bundled
+    // `dist/index.mjs` once published. (ADR 0004)
+    const templates = join(home, 'src', 'templates')
+    mkdirSync(templates, { recursive: true })
+
+    // `dist/index.mjs`, reaching the sources published beside it.
+    expect(templateSourceDirectory(join(home, 'dist'))).toBe(templates)
+    // `src/tool/kits.ts`, reaching the directory next door.
+    expect(templateSourceDirectory(join(home, 'src', 'tool'))).toBe(templates)
+  })
+
+  it('says the install is broken rather than seeding an empty kit', () => {
+    expect(() => templateSourceDirectory(join(home, 'a', 'b'))).toThrow(
+      /built-in templates are missing/,
+    )
+  })
+
+  it('has a source file for every built-in generator', () => {
+    // The copy resolves `src/templates/<id>.ts` by convention rather than by a
+    // field on `Generator`, so the convention is pinned here rather than
+    // discovered by a user whose `kit new` half succeeded. (ADR 0001)
+    const every = builtInGenerators(presetNames)
+
+    for (const generator of every) {
+      expect(
+        existsSync(sourceOf(generator.id)),
+        `${generator.id} has no template file`,
+      ).toBe(true)
+    }
   })
 })
 

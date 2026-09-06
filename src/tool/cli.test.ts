@@ -139,6 +139,14 @@ describe('kit commands', () => {
     expect(process.exitCode).toBeUndefined()
   })
 
+  it('names the templates it copied, which are what there is to edit', () => {
+    runKitNew('wibble', kits, ['storybook'])
+
+    expect(log.mock.calls.join('\n')).toContain(
+      'component.ts, hook.ts, test.ts, story.ts',
+    )
+  })
+
   it('refuses a name that is not a kit name', () => {
     runKitNew('../evil', kits)
 
@@ -174,6 +182,20 @@ describe('kit commands', () => {
 
     expect(existsSync(join(kits, 'wibble'))).toBe(true)
     expect(log.mock.calls[0]?.[0]).toBe('wibble')
+  })
+
+  it('passes --preset through in both of the shapes citty hands over', async () => {
+    const subCommands = kitCommand.subCommands as Record<string, CommandDef>
+    const create = subCommands.new
+    if (!create) throw new Error('the kit `new` subcommand is missing')
+
+    await invoke(create, { name: 'one', preset: 'storybook,msw' })
+    await invoke(create, { name: 'two', preset: ['storybook', 'msw'] })
+
+    for (const name of ['one', 'two']) {
+      expect(existsSync(join(kits, name, 'story.ts'))).toBe(true)
+      expect(existsSync(join(kits, name, 'msw-test.ts'))).toBe(true)
+    }
   })
 })
 

@@ -16,6 +16,7 @@ import { text } from '@clack/prompts'
 import { defineCommand } from 'citty'
 import { attempt } from 'es-toolkit'
 import { findPackageRoot, loadConfig, resolveConfig } from './config.ts'
+import { presetNames } from './generators.ts'
 import {
   KIT_COMMAND,
   createKit,
@@ -30,7 +31,25 @@ import { execute } from './run.ts'
 import { runWizard } from './wizard.ts'
 
 import type { Generator, Registry } from './generators.ts'
+import type { CreatedKit } from './kits.ts'
 import type { ScaffoldConfig } from './config.ts'
+
+/**
+ * `--flag a --flag b` and `--flag a,b` both mean the same two values.
+ *
+ * citty hands over a string for one occurrence and an array for several, and
+ * every repeatable flag here accepts commas too, so both shapes flatten in one
+ * place rather than once per flag.
+ */
+function parseList(raw: unknown): Array<string> {
+  const given = Array.isArray(raw) ? (raw as Array<unknown>) : [raw]
+
+  return given
+    .filter((value) => typeof value === 'string')
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean)
+}
 
 /**
  * `--with story --with test` and `--with story,test` both mean the same run.
@@ -42,12 +61,7 @@ export function parseWith(
   raw: unknown,
   registry: Registry,
 ): { ids: Array<string> } | { error: string } {
-  const given = Array.isArray(raw) ? (raw as Array<unknown>) : [raw]
-  const ids = given
-    .filter((value) => typeof value === 'string')
-    .flatMap((value) => value.split(','))
-    .map((value) => value.trim())
-    .filter(Boolean)
+  const ids = parseList(raw)
 
   const unknown = ids.filter((id) => !registry.has(id))
   if (unknown.length > 0) {
@@ -62,8 +76,14 @@ export function parseWith(
 }
 
 /** `scaffold kit new <name>` — create a kit and say how to use it. */
-export function runKitNew(name: string, directory: string): void {
-  const [error, path] = attempt<string, Error>(() => createKit(name, directory))
+export function runKitNew(
+  name: string,
+  directory: string,
+  presets: Array<string> = [],
+): void {
+  const [error, kit] = attempt<CreatedKit, Error>(() =>
+    createKit(name, directory, presets),
+  )
 
   if (error) {
     console.error(`✖ ${error.message}`)
@@ -71,11 +91,14 @@ export function runKitNew(name: string, directory: string): void {
     return
   }
 
-  console.log(`+ ${path}`)
+  console.log(`+ ${kit.path}`)
+  // The copied templates are the point of the command, so name them: knowing
+  // which arrived is knowing what there is to edit.
+  console.log(`  ${kit.templates.join(', ')}`)
   console.log(`  scaffold component Card --kit ${name}`)
   // The alias makes the kit run without this; the install is only what makes
   // an editor typecheck it. (ADR 0007)
-  console.log(`  install in ${path} to typecheck its templates`)
+  console.log(`  install in ${kit.path} to typecheck its templates`)
 }
 
 /** `scaffold kit ls` — the kits there are, one per line so it can be piped. */
@@ -105,12 +128,22 @@ export const kitCommand = defineCommand({
   },
   subCommands: {
     new: defineCommand({
-      meta: { name: 'new', description: 'Create a kit and print its path' },
+      meta: {
+        name: 'new',
+        description:
+          'Create a kit, seeded with a copy of the built-in templates',
+      },
       args: {
         name: { type: 'positional', required: true, description: 'Kit name' },
+        preset: {
+          type: 'string',
+          description:
+            'Also copy this preset group’s templates: ' +
+            presetNames.join(', '),
+        },
       },
       run: ({ args }) => {
-        runKitNew(String(args.name), kitsDirectory())
+        runKitNew(String(args.name), kitsDirectory(), parseList(args.preset))
       },
     }),
     ls: defineCommand({
