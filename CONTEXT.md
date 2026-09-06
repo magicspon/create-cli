@@ -36,6 +36,18 @@ the generator it overrides — `component.ts` overrides `component` — or, when
 generator, declares one. A file prefixed `_` is a helper rather than a template. (ADR 0005,
 ADR 0006)
 
+**Kit**:
+A template directory in the user's home directory rather than in a project, so one set of
+generators can serve every repository on the machine. `~/.scaffold/wibble`, named as
+`--kit wibble`. A kit holds templates and nothing else — no config file — and never applies unless
+it is named. (ADR 0007)
+_Avoid_: project (that is the repository being scaffolded into), profile, preset (a preset is a
+built-in generator group)
+
+**Kits directory**:
+`~/.scaffold`, or whatever `SCAFFOLD_HOME` names. Each directory directly inside it is one kit.
+(ADR 0007)
+
 **Declaration**:
 What a template file says about its generator besides the render — `description`, `directory`,
 `fileName`, `target`. Never an `id`: the filename is the id. A file that declares nothing is the
@@ -87,6 +99,14 @@ will overwrite it — `src/components/ui` under shadcn, say. Empty by default.
   Scaffolding the built-in output instead would look exactly like success.
 - A generator never writes to the project root by accident. Every directory key the registry uses
   resolves to a path, configured or `src/<key>`.
+- A kit applies only when it is named, by `--kit` or by `kit` in the config. Nothing under the kits
+  directory is loaded because it happens to exist.
+- A named kit that is missing, or that holds no template files, refuses the run and lists the kits
+  that exist. Contributing nothing is indistinguishable from no kit at all.
+- A project's own templates win over a kit's, field by field — so a repository can adopt a kit
+  whole and override the one generator that does not fit.
+- `kit` is not an available generator id. It names the management subcommand, and a generator would
+  shadow it.
 
 ## Boundaries
 
@@ -98,6 +118,9 @@ will overwrite it — `src/components/ui` under shadcn, say. Empty by default.
 - It never generates a file the project cannot execute. That is why the generators needing a
   particular runner live in presets rather than in the core.
 - Templates emit already-formatted output, because `format` defaults to running nothing.
+- A kit carries templates, not settings. `directories`, `imports`, `format` and `protect` belong to
+  the project being scaffolded into, so a kit's generators resolve against that project's config
+  exactly as the project's own generators do. (ADR 0007)
 
 ## Decisions
 

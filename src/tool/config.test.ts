@@ -70,6 +70,15 @@ describe('findPackageRoot', () => {
     writePackage(root, { name: 'here' })
     expect(findPackageRoot(root)).toBe(root)
   })
+
+  it('falls back to the directory itself when there is no package.json at all', () => {
+    // A globally installed scaffold pointed at a kit has no reason to require a
+    // Node project underneath it. (ADR 0007)
+    const nested = join(root, 'notes')
+    mkdirSync(nested, { recursive: true })
+
+    expect(findPackageRoot(nested)).toBe(nested)
+  })
 })
 
 describe('isInside', () => {
@@ -385,5 +394,165 @@ describe('loadConfig', () => {
     const config = await loadConfig(nested)
 
     expect(config.directories.components).toBe('app/ui')
+  })
+})
+
+describe('kits', () => {
+  let home: string
+
+  beforeEach(() => {
+    home = mkdtempSync(join(tmpdir(), 'scaffold-kits-config-'))
+    process.env.SCAFFOLD_HOME = home
+  })
+
+  afterEach(() => {
+    delete process.env.SCAFFOLD_HOME
+    rmSync(home, { recursive: true, force: true })
+  })
+
+  /** A kit of bare template files — no imports, so nothing to resolve. */
+  function writeKit(name: string, files: Record<string, string>): void {
+    mkdirSync(join(home, name), { recursive: true })
+    for (const [file, contents] of Object.entries(files)) {
+      writeFileSync(join(home, name, file), contents)
+    }
+  }
+
+  function writeProjectTemplate(file: string, contents: string): void {
+    mkdirSync(join(root, 'scaffold', 'templates'), { recursive: true })
+    writeFileSync(join(root, 'scaffold', 'templates', file), contents)
+  }
+
+  const casings = {
+    kebabName: 'card',
+    pascalName: 'Card',
+    hookName: 'useCard',
+    kebabHookName: 'use-card',
+  }
+
+  /**
+   * A kit template that declares a generator rather than overriding one, so it
+   * carries a `fileName` — the one field a new id cannot inherit. (ADR 0006)
+   */
+  function declaresRoute(render = '// kit'): string {
+    return (
+      'export default { fileName: ({ kebabName }) => `${kebabName}.route.ts`,' +
+      ` render: () => ${JSON.stringify(render)} }`
+    )
+  }
+
+  it('does not apply a kit that was not named, however many exist', async () => {
+    // Nothing under the kits directory loads because it happens to be there:
+    // an always-on kit would change what every repository on the machine
+    // scaffolds, with nothing in any of them saying so. (ADR 0007)
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+
+    const config = await loadConfig(root)
+
+    expect(config.kit).toBe(null)
+    expect(config.registry.has('route')).toBe(false)
+  })
+
+  it('registers a generator a kit declares', async () => {
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+
+    const config = await loadConfig(root, 'wibble')
+
+    expect(config.kit).toBe('wibble')
+    expect(config.registry.has('route')).toBe(true)
+    expect(config.registry.find('route')?.fileName(casings)).toBe(
+      'card.route.ts',
+    )
+  })
+
+  it("lets the project's own template override a kit's, field by field", async () => {
+    // The point of layering rather than replacing: a bare render in the project
+    // wins the render and inherits the kit's fileName, exactly as it would
+    // inherit a built-in's. (ADR 0007)
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+    writeProjectTemplate('route.ts', 'export default () => "// project"')
+
+    const config = await loadConfig(root, 'wibble')
+    const route = config.registry.find('route')
+
+    expect(
+      route?.render({
+        ...casings,
+        directory: 'src/routes',
+        path: 'src/routes/card.route.ts',
+        targetImport: '',
+        imports: {},
+      }),
+    ).toBe('// project')
+    expect(route?.fileName(casings)).toBe('card.route.ts')
+  })
+
+  it('refuses a kit that does not exist', async () => {
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+
+    await expect(loadConfig(root, 'wobble')).rejects.toThrow(
+      /no "wobble" kit\. Available: wibble/,
+    )
+  })
+
+  it('refuses a kit that exists but holds no templates', async () => {
+    // Contributing nothing is indistinguishable from passing no kit, and would
+    // scaffold the built-in output while looking exactly like success.
+    writePackage(root)
+    mkdirSync(join(home, 'empty'))
+
+    await expect(loadConfig(root, 'empty')).rejects.toThrow(
+      /holds no templates/,
+    )
+  })
+
+  it('takes the kit from the config file when no flag was passed', async () => {
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+    writeFileSync(
+      join(root, 'scaffold.config.ts'),
+      `export default { kit: 'wibble' }\n`,
+    )
+
+    const config = await loadConfig(root)
+
+    expect(config.kit).toBe('wibble')
+    expect(config.registry.has('route')).toBe(true)
+  })
+
+  it('lets the flag win over the config file', async () => {
+    // One is what this run asked for; the other is the project's standing answer.
+    writePackage(root)
+    writeKit('wibble', { 'route.ts': declaresRoute() })
+    writeKit('wobble', { 'route.ts': declaresRoute('// other') })
+    writeFileSync(
+      join(root, 'scaffold.config.ts'),
+      `export default { kit: 'wibble' }\n`,
+    )
+
+    const config = await loadConfig(root, 'wobble')
+
+    expect(config.kit).toBe('wobble')
+  })
+
+  it('refuses a generator called kit, whatever declared it', () => {
+    // `scaffold kit` is a subcommand and subcommands are generators, so either
+    // one silently winning would shadow the other. (ADR 0007)
+    expect(() => resolveConfig({ generators: [stub('kit')] }, '/r')).toThrow(
+      /reserved/,
+    )
+  })
+
+  it('refuses a kit.ts template for its name, not for its missing fileName', () => {
+    // Checked before the layers are applied. Otherwise a bare `kit.ts` is
+    // refused by ADR 0006's rule first, and the message names the wrong
+    // problem — the one that would still be there after fixing it.
+    expect(() =>
+      resolveConfig({}, '/r', null, [{ kit: { render: () => '' } }]),
+    ).toThrow(/reserved/)
   })
 })

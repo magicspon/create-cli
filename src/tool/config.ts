@@ -13,6 +13,7 @@ import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, join, parse, resolve } from 'node:path'
 import { loadConfig as loadC12 } from 'c12'
 import { builtInGenerators, createRegistry } from './generators.ts'
+import { KIT_COMMAND, kitsDirectory, resolveKit, selfAlias } from './kits.ts'
 import { applyTemplates, loadTemplates } from './user-templates.ts'
 
 import type { DeclaredTemplate, Generator, Registry } from './generators.ts'
@@ -67,6 +68,13 @@ export interface ScaffoldUserConfig {
    * (ADR 0005, ADR 0006)
    */
   templates?: string
+  /**
+   * A kit in `~/.scaffold` whose templates apply to this project, e.g.
+   * `'wibble'`. Overridden by `--kit`. Applied *under* this project's own
+   * templates, so a repository can adopt a kit and still override one
+   * generator of it. (ADR 0007)
+   */
+  kit?: string
   /** Built-in ids to switch off, by id. */
   disable?: Array<string>
   /**
@@ -88,6 +96,8 @@ export interface ScaffoldConfig {
   root: string
   /** Absolute path of the config file, or `null` when running on defaults. */
   configFile: string | null
+  /** The kit this run resolved with, or `null`. Named only so a run can say so. */
+  kit: string | null
   /** Each generator's default directory, relative to `root`. */
   directories: Record<string, string>
   /** Import specifiers handed to every template. */
@@ -124,20 +134,23 @@ export function sourceRoot(config: ScaffoldConfig): string {
 }
 
 /**
- * The nearest ancestor of `from` containing a `package.json`.
+ * The nearest ancestor of `from` containing a `package.json`, or `from` itself
+ * when there is none.
  *
  * This is the entirety of workspace support: in a single-package repo it
  * resolves to the root, and in a workspace it resolves to the package the
  * command was invoked from. There is no package picker and no enumeration.
+ *
+ * It falls back rather than throwing because it is here to *find* the package,
+ * never to gate the tool — a globally installed scaffold pointed at a kit has
+ * no reason to require a Node project underneath it. (ADR 0007)
  */
 export function findPackageRoot(from: string): string {
   let current = resolve(from)
   const { root } = parse(current)
 
   while (!existsSync(join(current, 'package.json'))) {
-    if (current === root) {
-      throw new Error(`No package.json found at or above ${from}`)
-    }
+    if (current === root) return resolve(from)
     current = dirname(current)
   }
 
@@ -173,30 +186,71 @@ export function resolveGenerators(user: ScaffoldUserConfig): Array<Generator> {
 /**
  * Fold a loaded config file into the resolved shape the rest of the tool uses.
  *
- * `templates` arrives already read from disk, because this stays synchronous:
+ * `layers` arrive already read from disk, because this stays synchronous:
  * loading is `loadConfig`'s job, and everything downstream — `plan()` above
  * all — sees an overridden generator as just a generator. (ADR 0005)
+ *
+ * They are *layers* rather than one record because the ordering is the whole
+ * decision: nearest the project last, so a kit applies under the project's own
+ * templates and each layer merges field by field over the one beneath. A
+ * project's bare render therefore overrides a kit-declared generator exactly as
+ * it overrides a built-in one, keeping its `fileName`. (ADR 0007)
  */
 export function resolveConfig(
   user: ScaffoldUserConfig,
   root: string,
   configFile: string | null = null,
-  templates: Record<string, DeclaredTemplate> = {},
+  layers: Array<Record<string, DeclaredTemplate>> = [],
+  kit: string | null = null,
 ): ScaffoldConfig {
+  const base = resolveGenerators(user)
+
+  // Checked before the layers are applied, so a `kit.ts` template is refused
+  // for the name it took rather than for the `fileName` it also lacks.
+  refuseReservedId(base, layers)
+
   // Applied last, over the fully composed list, so a template file can
   // override a generator the project defined itself as readily as a built-in.
   const registry = createRegistry(
-    applyTemplates(resolveGenerators(user), templates),
+    layers.reduce(
+      (generators, layer) => applyTemplates(generators, layer),
+      base,
+    ),
   )
 
   return {
     root,
     configFile,
+    kit,
     directories: resolveDirectories(user, registry),
     imports: { ...user.imports },
     protect: user.protect ?? [],
     format: user.format ?? [],
     registry,
+  }
+}
+
+/**
+ * Refuse a generator called `kit`, whatever declared it.
+ *
+ * The subcommand list *is* the registry, so a `kit` generator and the
+ * `scaffold kit` management commands are the same name in one namespace. Either
+ * of them silently winning is the failure ADR 0005 and ADR 0006 both went out
+ * of their way to make impossible, so neither does. (ADR 0007)
+ */
+function refuseReservedId(
+  generators: Array<Generator>,
+  layers: Array<Record<string, DeclaredTemplate>>,
+): void {
+  const claimed =
+    generators.some((generator) => generator.id === KIT_COMMAND) ||
+    layers.some((layer) => KIT_COMMAND in layer)
+
+  if (claimed) {
+    throw new Error(
+      `"${KIT_COMMAND}" is reserved for \`scaffold ${KIT_COMMAND}\` and cannot be a ` +
+        'generator. Rename it — the template file, or the id in `generators`.',
+    )
   }
 }
 
@@ -245,13 +299,21 @@ function resolveDirectories(
  */
 export async function loadConfig(
   from: string = process.cwd(),
+  kit: string | null = null,
 ): Promise<ScaffoldConfig> {
   const root = findPackageRoot(from)
+
+  // Both loaders resolve our own package from where the *tool* is installed
+  // rather than from the file being loaded. Without it a globally installed
+  // scaffold cannot read a config file that imports `defineConfig`, and no kit
+  // template can import `defineTemplate` at all. (ADR 0007)
+  const alias = selfAlias()
 
   const { config, configFile } = await loadC12<ScaffoldUserConfig>({
     name: CONFIG_NAME,
     cwd: root,
     packageJson: true,
+    jitiOptions: { alias },
   })
 
   // c12 reports the *name* it looked for when it found nothing, so a bare
@@ -270,8 +332,38 @@ export async function loadConfig(
       ? DEFAULT_TEMPLATE_DIRECTORY
       : null)
 
-  // The only disk read besides the config file itself.
-  const templates = directory ? await loadTemplates(directory, root) : {}
+  const templates = directory ? await loadTemplates(directory, root, alias) : {}
 
-  return resolveConfig(config, root, found, templates)
+  // The flag wins over the config field: one is what this run asked for, the
+  // other is the project's standing answer. (ADR 0007)
+  const named = kit ?? config.kit ?? null
+  const kitTemplates = named ? await loadKit(named, alias) : {}
+
+  // Kit first, project last — nearest the project wins. (ADR 0007)
+  return resolveConfig(config, root, found, [kitTemplates, templates], named)
+}
+
+/**
+ * A named kit's templates.
+ *
+ * An existing kit holding none refuses the run just as a missing one does: it
+ * contributes nothing, which is indistinguishable from passing no kit, and
+ * would scaffold the built-in output while looking exactly like success.
+ * (ADR 0007)
+ */
+async function loadKit(
+  name: string,
+  alias: Record<string, string>,
+): Promise<Record<string, DeclaredTemplate>> {
+  const path = resolveKit(name, kitsDirectory())
+  const templates = await loadTemplates(path, path, alias)
+
+  if (Object.keys(templates).length === 0) {
+    throw new Error(
+      `The "${name}" kit at ${path} holds no templates, so it would add nothing. ` +
+        'Add a template file, or drop the kit.',
+    )
+  }
+
+  return templates
 }

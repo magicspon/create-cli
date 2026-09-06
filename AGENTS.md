@@ -6,6 +6,14 @@ is the tool itself — there is no app here.
 Read `CONTEXT.md` for the domain language and `docs/adr/` for the decisions before changing
 anything structural.
 
+## Grilling
+
+When running the `grilling` skill:
+
+- Ask exactly one question per message, then stop and wait for my answer.
+- Present choices as labelled alternatives (`A`, `B`, `C`, …), each on its own line.
+- Close with a separate `Recommendation:` line below the alternatives, naming your pick and a one-sentence rationale.
+
 ## Architecture in one paragraph
 
 A run resolves to a **plan** — every `{path, contents}` it would write — which is validated in full

@@ -85,5 +85,10 @@ export function execute(run: ScaffoldRun, config: ScaffoldConfig): number {
     return 1
   }
 
+  // Which kit, and nothing more. A generator that rendered from somewhere
+  // unexpected is the question this answers, and `scaffold kit ls` plus "the
+  // project's own templates win" answers the rest. (ADR 0007)
+  if (config.kit) console.log(`· kit: ${config.kit}`)
+
   return run.dryRun ? preview(result.files) : write(result.files, config)
 }
