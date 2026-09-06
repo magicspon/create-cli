@@ -1,5 +1,13 @@
 # @magicspon/create-cli
 
+## 2.2.0
+
+### Minor Changes
+
+- [#22](https://github.com/magicspon/create-cli/pull/22) [`6c6b709`](https://github.com/magicspon/create-cli/commit/6c6b709138a0294b515bbff43ee1cd91b783afb5) Thanks [@magicspon](https://github.com/magicspon)! - Lower the supported Node floor to 24.20.0. `engines.node` was `>=26.0.0`, which excluded the
+  current LTS line for no reason the code required — nothing in the package uses an API newer than
+  Node 24, and the build now targets that floor. The test suite runs on both ends of the range in CI.
+
 ## 2.1.0
 
 ### Minor Changes
