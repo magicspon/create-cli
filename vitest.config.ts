@@ -13,7 +13,11 @@ export default defineConfig({
       // Every source file, not only the ones a test happened to import — an
       // untested file reading 0% is the number worth seeing.
       include: ['src/**/*.ts'],
-      exclude: ['dist'],
+      // `index.ts` is the bin and nothing else: importing it loads a config
+      // from the working directory and runs a command, so it cannot be
+      // exercised in-process. Everything it used to hold now lives in
+      // `tool/cli.ts`, which is covered.
+      exclude: ['dist', 'src/index.ts'],
       // `lcovonly` rather than `lcov`: the latter writes a second HTML report
       // under `coverage/lcov-report`, which `html` has already produced.
       reporter: ['text', 'html', 'lcovonly'],
@@ -22,17 +26,20 @@ export default defineConfig({
       // have to chase the last percent. Raise them when the suite earns it.
       //
       // Branches sits lower than the other three on purpose. v8 counts every
-      // `??`, `?.` and defensive `catch` as a branch, and this codebase is
-      // written with a lot of them — `result ?? []` in a renderer an error
-      // envelope never reaches, `if (!sf) continue` inside the adapter, a guard
-      // against a store row that cannot exist. Reaching those would mean
-      // corrupting a store or mocking the type checker, which asserts nothing
-      // about behaviour. What is left uncovered is that, not untested paths.
+      // `??` and `?.` as a branch, and the strict-mode guards this codebase is
+      // written with cannot all fire: `config.directories[key] ?? '.'` is dead
+      // for a registered generator because `resolveConfig` fills an entry for
+      // every key the registry uses, `haystack[at - 1] ?? ''` is dead because
+      // the `at === 0` test beside it short-circuits first, and `selfAlias`
+      // returns `{}` only when this package cannot resolve itself. Reaching
+      // those would mean breaking the invariant that makes them dead, which
+      // asserts nothing about behaviour. What is left uncovered is that, not
+      // untested paths.
       thresholds: {
-        statements: 97,
-        branches: 90,
-        functions: 98,
-        lines: 98,
+        statements: 99,
+        branches: 94,
+        functions: 99,
+        lines: 99,
       },
     },
   },

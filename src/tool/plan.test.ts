@@ -74,6 +74,12 @@ describe('paths', () => {
     ])
   })
 
+  it('keeps a hook called nothing but "use" from losing its name', () => {
+    expect(paths(run({ generator: 'hook', name: 'use' }))).toEqual([
+      'src/hooks/use-use.ts',
+    ])
+  })
+
   it('does not double the use prefix when the name already carries one', () => {
     expect(paths(run({ generator: 'hook', name: 'useMouse' }))).toEqual([
       'src/hooks/use-mouse.ts',

@@ -1,16 +1,16 @@
 # Graph Report - create-cli  (2026-09-06)
 
 ## Corpus Check
-- 75 files · ~36,911 words
+- 82 files · ~41,470 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 498 nodes · 730 edges · 45 communities (34 shown, 11 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
+- 531 nodes · 834 edges · 45 communities (34 shown, 11 thin omitted)
+- Extraction: 97% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ad810bd7`
+- Built from commit: `d7922abd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -60,15 +60,15 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 21 edges
-2. `scripts` - 14 edges
-3. `Generator` - 14 edges
-4. `plan` - 13 edges
-5. `resolveConfig()` - 11 edges
-6. `pickTarget()` - 11 edges
-7. `@magicspon/create-cli` - 11 edges
-8. `ScaffoldConfig` - 10 edges
-9. `unwrap()` - 10 edges
-10. `@magicspon/create-cli` - 10 edges
+2. `resolveConfig()` - 19 edges
+3. `Generator` - 17 edges
+4. `ScaffoldConfig` - 15 edges
+5. `scripts` - 14 edges
+6. `pickTarget()` - 13 edges
+7. `plan` - 13 edges
+8. `unwrap()` - 12 edges
+9. `releaseStdin()` - 11 edges
+10. `@magicspon/create-cli` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `pnpm onlyBuiltDependencies Allowlist` --semantically_similar_to--> `Claude Code Permission Policy`  [INFERRED] [semantically similar]
@@ -99,20 +99,20 @@ Cohesion: 0.11
 Nodes (21): Claude Code Permission Policy, Devtools EventClient Protocol, TanStack Devtools Plugin System, Devtools Vite Plugin Must Be First, Router Full Type Inference Philosophy, Isomorphic-by-Default Execution Model, TanStack Intent Skill Registry, generate-routes (tsr generate) (+13 more)
 
 ### Community 2 - "Dev Dependencies"
-Cohesion: 0.12
-Nodes (16): config, devDependencies, @changesets/changelog-github, @changesets/cli, @commitlint/cli, @commitlint/config-conventional, husky, nano-staged (+8 more)
+Cohesion: 0.11
+Nodes (17): config, devDependencies, @changesets/changelog-github, @changesets/cli, @commitlint/cli, @commitlint/config-conventional, husky, nano-staged (+9 more)
 
 ### Community 3 - "Runtime Dependencies"
-Cohesion: 0.08
-Nodes (42): Chosen, kitCommand, main, resolveChoice(), subCommandFor(), ScaffoldConfig, sourceRoot(), createDirectorySearch() (+34 more)
+Cohesion: 0.09
+Nodes (34): resolveChoice(), sourceRoot(), createDirectorySearch(), DirectoryOption, IGNORED, listDirectories(), walk(), fuzzyScore() (+26 more)
 
 ### Community 4 - "Storybook Example Components"
-Cohesion: 0.12
-Nodes (27): commit(), format(), accepted, rejected, isInside(), GeneratorId, normaliseDirectory(), plan (+19 more)
+Cohesion: 0.09
+Nodes (34): commit(), format(), accepted, rejected, isInside(), casingsOf(), GeneratorId, hookNameOf() (+26 more)
 
 ### Community 5 - "Router and Query Runtime"
-Cohesion: 0.16
-Nodes (20): load(), DEFAULT_DIRECTORIES, findPackageRoot(), loadConfig(), loadKit(), refuseReservedId(), resolveConfig(), resolveDirectories() (+12 more)
+Cohesion: 0.15
+Nodes (24): Chosen, createMain(), GeneratorArgs, kitCommand, loadCliConfig(), parseWith(), runGenerator(), runKitLs() (+16 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
@@ -199,8 +199,8 @@ Cohesion: 0.40
 Nodes (4): Agent skills, Domain docs, Issue tracker, Triage labels
 
 ### Community 51 - "Community 51"
-Cohesion: 0.09
-Nodes (30): renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest(), ScaffoldUserConfig, casingsOf() (+22 more)
+Cohesion: 0.06
+Nodes (41): defineConfig(), defineTemplate(), renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest() (+33 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.29
@@ -219,7 +219,7 @@ Nodes (5): Conventions, Issue tracker: GitHub, Labels, When a skill says "fetch 
   src/stories/assets/share.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **246 isolated node(s):** `$schema`, `baseBranch`, `access`, `format`, `changelog` (+241 more)
+- **250 isolated node(s):** `$schema`, `baseBranch`, `access`, `format`, `changelog` (+245 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -229,14 +229,14 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `GitHub Source Repository Link` and `Chromatic Hosted Storybook Publishing`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `Generator` connect `Community 51` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `Dev Dependencies` to `Package Manifest and Scripts`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `resolveConfig()` connect `Community 51` to `Storybook Example Components`, `Router and Query Runtime`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `$schema`, `baseBranch`, `access` to the rest of the system?**
-  _249 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _253 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Build and Tooling Configuration` be split into smaller, more focused modules?**
   _Cohesion score 0.11428571428571428 - nodes in this community are weakly interconnected._
 - **Should `Dev Dependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
-- **Should `Runtime Dependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.0822746521476104 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._

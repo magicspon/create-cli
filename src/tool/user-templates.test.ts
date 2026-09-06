@@ -186,6 +186,21 @@ describe('applyTemplates', () => {
     expect(component?.description).toBe('a component')
   })
 
+  it('takes the description and the target a file declares', () => {
+    // Both are what `--help` and the picker read, so a file that renames a
+    // built-in has to be able to say what it now is.
+    const [, story] = applyTemplates([stub('component'), stub('story')], {
+      story: {
+        description: 'our house story',
+        target: 'component',
+        render: () => '// mine',
+      },
+    })
+
+    expect(story?.description).toBe('our house story')
+    expect(story?.target).toBe('component')
+  })
+
   it('is a no-op when there are no templates', () => {
     const generators = [stub('component')]
 

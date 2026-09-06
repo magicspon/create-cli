@@ -24,9 +24,10 @@ testable without a filesystem. The **registry** of generators is built per run f
 
 ```
 src/
-  index.ts              # citty subcommands, one per generator; loads config first
+  index.ts              # the bin: load the config, run the command
   define-config.ts      # the package's public entry — defineConfig + types
   tool/
+    cli.ts              # citty subcommands, one per generator, plus `kit`
     config.ts           # c12 config loading; defaults; resolve to a ScaffoldConfig
     generators.ts       # core + presets + the Registry type
     plan.ts             # request -> plan or refusal (pure; the unit under test)
@@ -63,6 +64,9 @@ src/
   the registry, so it cannot be built any earlier. Do not add a second `loadConfig()` call — the
   project's config file is user code, and running it twice per invocation would make it behave
   differently from how it reads.
+- **`index.ts` is the bin and holds nothing else.** Importing it loads a config from the working
+  directory and runs a command, so nothing in it can be tested in-process — which is why it is
+  excluded from coverage and why the commands live in `tool/cli.ts`. Add a command there.
 - **Templates must emit already-formatted, immediately-executable output.** `format` defaults to
   running nothing, and a scaffolded file that fails to typecheck or run on arrival trains people to
   ignore a red run.

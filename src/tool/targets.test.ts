@@ -193,6 +193,16 @@ describe('createTargetSearch', () => {
     expect(search()('dtab')[0]?.value).toBe('src/components/data-table.tsx')
   })
 
+  it('ranks every match, not only the best one', () => {
+    // A query every target matches equally well, so what is left to separate
+    // them is length — the shortest path is the one you meant.
+    expect(search()('src').map((option) => option.value)).toEqual([
+      'src/widgets/badge.tsx',
+      'src/components/wibble.tsx',
+      'src/components/data-table.tsx',
+    ])
+  })
+
   it('drops anything the query does not match', () => {
     expect(search()('zzz')).toEqual([])
   })
