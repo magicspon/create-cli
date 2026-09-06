@@ -1,5 +1,26 @@
 # @magicspon/create-cli
 
+## 2.0.0
+
+### Major Changes
+
+- [#17](https://github.com/magicspon/create-cli/pull/17) [`4720cec`](https://github.com/magicspon/create-cli/commit/4720cec9e05424690116adcb442209e10b7f7f61) Thanks [@magicspon](https://github.com/magicspon)! - Raise the supported Node floor to 26. `engines.node` is now `>=26.0.0` and the build targets
+  `node26`, matching the `@types/node` the package typechecks against — types ahead of the floor let
+  the build accept APIs that are missing at run time.
+
+  Installing on Node 20, 22 or 24 will now fail the engines check.
+
+### Patch Changes
+
+- [#17](https://github.com/magicspon/create-cli/pull/17) [`4720cec`](https://github.com/magicspon/create-cli/commit/4720cec9e05424690116adcb442209e10b7f7f61) Thanks [@magicspon](https://github.com/magicspon)! - Update the development toolchain: pnpm 12, Vitest 5, and the oxc tools.
+
+  `@vitest/coverage-v8` was pinned to `4.1.11` while `vitest` moved to `^5.0.0`. Vitest 5 hands the
+  provider a coverage payload the v4 provider cannot read, so every `pnpm test:coverage` run died on
+  `Expected string coverage payload, received object` and reported 0%. The two now track the same
+  range, and coverage is back at 100%.
+
+  No change to the published package.
+
 ## 1.1.0
 
 ### Minor Changes
