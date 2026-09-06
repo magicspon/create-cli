@@ -19,9 +19,9 @@
   "bugs": "https://github.com/magicspon/create-cli/issues",
   "homepage": "https://github.com/magicspon/create-cli#readme",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=26.0.0"
   },
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@12.3.4",
   "bin": {
     "scaffold": "./dist/index.mjs"
   },
@@ -49,7 +49,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "release": "changeset publish",
-	  "version-packages": "changeset version && pnpm i --lockfile-only",
+    "version-packages": "changeset version && pnpm i --lockfile-only",
     "yalc:publish": "pnpm build && yalc publish --push --no-scripts",
     "yalc:remove": "yalc installations clean @magicspon/create-cli",
     "prepare": "husky"
@@ -66,16 +66,16 @@
     "@changesets/cli": "^3.0.1",
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
-    "@types/node": "^22.20.1",
-    "@vitest/coverage-v8": "4.1.11",
+    "@types/node": "^26.4.1",
+    "@vitest/coverage-v8": "^5.0.0",
     "husky": "^9.1.7",
     "nano-staged": "^1.0.2",
-    "oxfmt": "^0.65.0",
-    "oxlint": "^1.80.0",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
     "oxlint-tsgolint": "^7.0.2001",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11",
+    "vitest": "^5.0.0",
     "yalc": "1.0.0-pre.53"
   }
 }

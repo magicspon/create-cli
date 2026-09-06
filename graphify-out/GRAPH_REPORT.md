@@ -1,16 +1,16 @@
 # Graph Report - create-cli  (2026-09-06)
 
 ## Corpus Check
-- 82 files · ~41,883 words
+- 85 files · ~42,308 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 532 nodes · 835 edges · 45 communities (34 shown, 11 thin omitted)
-- Extraction: 97% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
+- 533 nodes · 858 edges · 49 communities (38 shown, 11 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5a86ac9b`
+- Built from commit: `041a645e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -37,6 +37,8 @@
 - [[_COMMUNITY_Community 21|Community 21]]
 - [[_COMMUNITY_Community 22|Community 22]]
 - [[_COMMUNITY_Changesets Release Config|Changesets Release Config]]
+- [[_COMMUNITY_Community 25|Community 25]]
+- [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_AGENTS.md Project Conventions|AGENTS.md Project Conventions]]
 - [[_COMMUNITY_ESLint Config Module|ESLint Config Module]]
 - [[_COMMUNITY_pnpm Workspace Install Policy|pnpm Workspace Install Policy]]
@@ -59,11 +61,11 @@
 - [[_COMMUNITY_Community 59|Community 59]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `compilerOptions` - 21 edges
-2. `resolveConfig()` - 19 edges
+1. `resolveConfig()` - 21 edges
+2. `compilerOptions` - 21 edges
 3. `Generator` - 17 edges
-4. `ScaffoldConfig` - 15 edges
-5. `scripts` - 14 edges
+4. `ScaffoldConfig` - 16 edges
+5. `scripts` - 15 edges
 6. `pickTarget()` - 13 edges
 7. `plan` - 13 edges
 8. `unwrap()` - 12 edges
@@ -88,7 +90,7 @@
 ## Hyperedges (group relationships)
 - **Directory Prompt: search, rank, anchor, write** — readme_picking_a_directory, cli_directories_createdirectorysearch, cli_directories_fuzzyscore, cli_output_writeresult [EXTRACTED 0.90]
 
-## Communities (45 total, 11 thin omitted)
+## Communities (49 total, 11 thin omitted)
 
 ### Community 0 - "Damp CLI: Output and Directory Prompt"
 Cohesion: 0.29
@@ -103,16 +105,16 @@ Cohesion: 0.11
 Nodes (17): config, devDependencies, @changesets/changelog-github, @changesets/cli, @commitlint/cli, @commitlint/config-conventional, husky, nano-staged (+9 more)
 
 ### Community 3 - "Runtime Dependencies"
-Cohesion: 0.11
-Nodes (16): DirectoryOption, IGNORED, listDirectories(), walk(), fuzzyScore(), normalise(), createRegistry(), listFiles() (+8 more)
+Cohesion: 0.25
+Nodes (7): createRegistry(), generator(), hookTest, paths(), PROTECTED, registry, story
 
 ### Community 4 - "Storybook Example Components"
-Cohesion: 0.10
-Nodes (29): commit(), format(), accepted, rejected, isInside(), casingsOf(), GeneratorId, hookNameOf() (+21 more)
+Cohesion: 0.13
+Nodes (23): accepted, rejected, isInside(), casingsOf(), GeneratorId, hookNameOf(), normaliseDirectory(), plan (+15 more)
 
 ### Community 5 - "Router and Query Runtime"
 Cohesion: 0.09
-Nodes (48): Chosen, createMain(), GeneratorArgs, kitCommand, loadCliConfig(), parseWith(), resolveChoice(), runGenerator() (+40 more)
+Nodes (43): Chosen, createMain(), GeneratorArgs, parseWith(), resolveChoice(), runGenerator(), commit(), format() (+35 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
@@ -132,7 +134,7 @@ Nodes (3): Consequences, The package ships compiled JavaScript, What builds it
 
 ### Community 10 - "Package Manifest and Scripts"
 Cohesion: 0.04
-Nodes (44): author, bin, scaffold, bugs, default, dependencies, c12, citty (+36 more)
+Nodes (45): author, bin, scaffold, bugs, default, dependencies, c12, citty (+37 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.12
@@ -161,6 +163,14 @@ Nodes (3): 1.0.0, @magicspon/create-cli, Major Changes
 ### Community 23 - "Changesets Release Config"
 Cohesion: 0.18
 Nodes (10): access, baseBranch, changelog, commit, fixed, format, ignore, linked (+2 more)
+
+### Community 25 - "Community 25"
+Cohesion: 0.15
+Nodes (18): loadCliConfig(), DEFAULT_DIRECTORIES, findPackageRoot(), loadConfig(), loadKit(), resolveDirectories(), resolveGenerators(), builtInGenerators() (+10 more)
+
+### Community 26 - "Community 26"
+Cohesion: 0.14
+Nodes (16): kitCommand, runKitLs(), runKitNew(), subCommandFor(), project(), refuseReservedId(), resolveConfig(), project() (+8 more)
 
 ### Community 30 - "AGENTS.md Project Conventions"
 Cohesion: 0.17
@@ -199,8 +209,8 @@ Cohesion: 0.40
 Nodes (4): Agent skills, Domain docs, Issue tracker, Triage labels
 
 ### Community 51 - "Community 51"
-Cohesion: 0.06
-Nodes (40): defineConfig(), defineTemplate(), renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest() (+32 more)
+Cohesion: 0.09
+Nodes (29): defineConfig(), defineTemplate(), renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest() (+21 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.29
@@ -219,7 +229,7 @@ Nodes (5): Conventions, Issue tracker: GitHub, Labels, When a skill says "fetch 
   src/stories/assets/share.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **250 isolated node(s):** `$schema`, `baseBranch`, `access`, `format`, `changelog` (+245 more)
+- **249 isolated node(s):** `$schema`, `baseBranch`, `access`, `format`, `changelog` (+244 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -228,14 +238,14 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `GitHub Source Repository Link` and `Chromatic Hosted Storybook Publishing`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `Generator` connect `Community 51` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `Generator` connect `Community 51` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`, `Community 25`, `Community 26`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `Dev Dependencies` to `Package Manifest and Scripts`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **Why does `resolveConfig()` connect `Community 51` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`?**
+- **Why does `resolveConfig()` connect `Community 26` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`, `Community 51`, `Community 25`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `$schema`, `baseBranch`, `access` to the rest of the system?**
-  _253 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _252 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Build and Tooling Configuration` be split into smaller, more focused modules?**
   _Cohesion score 0.11428571428571428 - nodes in this community are weakly interconnected._
 - **Should `Dev Dependencies` be split into smaller, more focused modules?**

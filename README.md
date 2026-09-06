@@ -797,7 +797,7 @@ prompt leaves nothing behind.
 
 ## Requirements
 
-Node 20.19+. The package ships compiled JavaScript — Node refuses to strip types inside
+Node 26+. The package ships compiled JavaScript — Node refuses to strip types inside
 `node_modules`, so a published `.ts` file would be unloadable at any version. See
 [ADR 0004](docs/adr/0004-the-package-ships-compiled-javascript.md).
 
