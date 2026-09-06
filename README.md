@@ -1,4 +1,5 @@
 [![CI](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/magicspon/create-cli/actions/workflows/ci.yaml)
 [![Fallow](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/fallow.yml) [![Release](https://github.com/magicspon/create-cli/actions/workflows/release.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/release.yaml) [![Renovate](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml/badge.svg)](https://github.com/magicspon/create-cli/actions/workflows/renovate.yaml)
 
 # @magicspon/create-cli
