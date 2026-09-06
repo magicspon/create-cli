@@ -29,7 +29,7 @@ const CONFIG_NAME = 'scaffold'
  * several won would be a rule to learn, and the point is not having to learn
  * one. (ADR 0006)
  */
-export const DEFAULT_TEMPLATE_DIRECTORY = 'scaffold/templates'
+const DEFAULT_TEMPLATE_DIRECTORY = 'scaffold/templates'
 
 /**
  * Directories every built-in generator falls back to.

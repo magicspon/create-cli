@@ -8,13 +8,13 @@
  * by reading the project.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { autocomplete, cancel, confirm } from '@clack/prompts'
-import { resolveConfig } from './config.ts'
 import { pickTarget } from './pick.ts'
+import { createProject, optionsOf } from './testing.ts'
 
 import type { Generator } from './generators.ts'
 import type { ScaffoldConfig } from './config.ts'
@@ -37,28 +37,9 @@ function cancelled(): string {
     .join(' ')
 }
 
-/**
- * Call a clack prompt's option getter the way clack calls it: as a method on
- * the live prompt, so `this.userInput` is whatever has been typed so far.
- */
-function optionsOf<State>(
-  prompt: { options: unknown },
-  state: State,
-): Array<{ value: unknown; label: string; hint?: string }> {
-  const get = prompt.options as (
-    this: State,
-  ) => Array<{ value: unknown; label: string; hint?: string }>
-  return get.call(state)
-}
-
 /** A project containing exactly these files, relative to its root. */
-function project(files: Array<string>, user = {}): ScaffoldConfig {
-  for (const file of files) {
-    mkdirSync(join(root, dirname(file)), { recursive: true })
-    writeFileSync(join(root, file), '')
-  }
-
-  return resolveConfig({ presets: ['storybook'], ...user }, root)
+function project(files: Array<string>): ScaffoldConfig {
+  return createProject(root, files)
 }
 
 /** The generator being pointed at something — `story`, whose target is a component. */

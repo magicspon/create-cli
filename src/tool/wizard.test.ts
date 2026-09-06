@@ -7,15 +7,9 @@
  * and typing four flags cannot diverge.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   autocomplete,
@@ -28,6 +22,13 @@ import {
   text,
 } from '@clack/prompts'
 import { resolveConfig } from './config.ts'
+import {
+  createProject,
+  optionsOf,
+  restoreTTY,
+  setTTY,
+  validatorOf,
+} from './testing.ts'
 import { runWizard } from './wizard.ts'
 
 import type { MockInstance } from 'vitest'
@@ -57,46 +58,34 @@ function cancelled(): string {
     .join(' ')
 }
 
-/**
- * Call a clack prompt's option getter the way clack calls it: as a method on
- * the live prompt, so `this.userInput` is whatever has been typed so far.
- */
-function optionsOf<State>(
-  prompt: { options: unknown },
-  state: State,
-): Array<{ value: unknown; label: string; hint?: string }> {
-  const get = prompt.options as (
-    this: State,
-  ) => Array<{ value: unknown; label: string; hint?: string }>
-  return get.call(state)
-}
-
-/** A prompt's validator, which clack types as "a function or a schema". */
-function validatorOf(prompt: {
-  validate?: unknown
-}): (value: string) => string | undefined {
-  return prompt.validate as (value: string) => string | undefined
-}
-
 /** A project containing exactly these files, relative to its root. */
 function project(files: Array<string> = [], user = {}): ScaffoldConfig {
-  for (const file of files) {
-    mkdirSync(join(root, dirname(file)), { recursive: true })
-    writeFileSync(join(root, file), '')
-  }
-
-  return resolveConfig({ presets: ['storybook'], ...user }, root)
+  return createProject(root, files, user)
 }
 
-function setTTY(value: boolean): void {
-  for (const stream of [process.stdin, process.stdout]) {
-    Object.defineProperty(stream, 'isTTY', { value, configurable: true })
-  }
-}
-
-const originalTTY = {
-  stdin: Object.getOwnPropertyDescriptor(process.stdin, 'isTTY'),
-  stdout: Object.getOwnPropertyDescriptor(process.stdout, 'isTTY'),
+/**
+ * Queue the wizard's answers, in the order it asks for them. Every prompt is
+ * answered whether or not this case reaches it, so a test only names the
+ * answer it is actually about.
+ */
+function answers({
+  generator,
+  name = 'Card',
+  directory = 'src/components',
+  compose = [],
+  write = false,
+}: {
+  generator: string
+  name?: string
+  directory?: string
+  compose?: Array<string>
+  write?: boolean
+}): void {
+  vi.mocked(select).mockResolvedValue(generator)
+  vi.mocked(text).mockResolvedValue(name)
+  vi.mocked(autocomplete).mockResolvedValue(directory)
+  vi.mocked(multiselect).mockResolvedValue(compose)
+  vi.mocked(confirm).mockResolvedValue(write)
 }
 
 beforeEach(() => {
@@ -124,12 +113,7 @@ afterEach(() => {
   ]) {
     vi.mocked(mock).mockReset()
   }
-  if (originalTTY.stdin) {
-    Object.defineProperty(process.stdin, 'isTTY', originalTTY.stdin)
-  }
-  if (originalTTY.stdout) {
-    Object.defineProperty(process.stdout, 'isTTY', originalTTY.stdout)
-  }
+  restoreTTY()
   process.exitCode = undefined
 })
 
@@ -145,11 +129,7 @@ describe('runWizard', () => {
   })
 
   it('names the kit in the intro, and only when there is one', async () => {
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(false)
+    answers({ generator: 'component' })
 
     await runWizard(project())
     expect(intro).toHaveBeenCalledWith(' scaffold ')
@@ -160,11 +140,7 @@ describe('runWizard', () => {
 
   it('asks name, directory and composition, then writes what it previewed', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue(['story'])
-    vi.mocked(confirm).mockResolvedValue(true)
+    answers({ generator: 'component', compose: ['story'], write: true })
 
     await runWizard(config)
 
@@ -179,11 +155,7 @@ describe('runWizard', () => {
     // agree, or accepting the default would stop meaning what omitting
     // `--dir` means.
     const config = project()
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('.')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(true)
+    answers({ generator: 'component', directory: '.', write: true })
 
     await runWizard({ ...config, directories: {} })
 
@@ -193,10 +165,11 @@ describe('runWizard', () => {
 
   it('never offers the target itself as something to compose', async () => {
     const config = project(['src/components/card.tsx'])
-    vi.mocked(select).mockResolvedValue('story')
-    vi.mocked(autocomplete).mockResolvedValue('src/components/card.tsx')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(true)
+    answers({
+      generator: 'story',
+      directory: 'src/components/card.tsx',
+      write: true,
+    })
 
     await runWizard(config)
 
@@ -207,11 +180,7 @@ describe('runWizard', () => {
 
   it('writes into a directory that is not the generator’s default', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/widgets')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(true)
+    answers({ generator: 'component', directory: 'src/widgets', write: true })
 
     await runWizard(config)
 
@@ -220,11 +189,7 @@ describe('runWizard', () => {
 
   it('offers the existing tree as directories, ranked as you type', async () => {
     const config = project(['src/components/card.tsx', 'src/widgets/table.tsx'])
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(false)
+    answers({ generator: 'component' })
 
     await runWizard(config)
 
@@ -237,10 +202,7 @@ describe('runWizard', () => {
 
   it('stops when the plan is refused, before asking to write', async () => {
     const config = project(['src/components/card.tsx'])
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue([])
+    answers({ generator: 'component' })
 
     await runWizard(config)
 
@@ -251,11 +213,7 @@ describe('runWizard', () => {
 
   it('writes nothing when the preview is declined', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(false)
+    answers({ generator: 'component' })
 
     await runWizard(config)
 
@@ -265,7 +223,7 @@ describe('runWizard', () => {
 
   it('stops when the target picker had nothing to offer', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('story')
+    answers({ generator: 'story' })
 
     await runWizard(config)
 
@@ -275,7 +233,7 @@ describe('runWizard', () => {
 
   it('refuses a generator the registry does not have', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('wibble')
+    answers({ generator: 'wibble' })
 
     await runWizard(config)
 
@@ -287,11 +245,7 @@ describe('runWizard', () => {
 
   it('requires a name, and accepts one that is not only whitespace', async () => {
     const config = project()
-    vi.mocked(select).mockResolvedValue('component')
-    vi.mocked(text).mockResolvedValue('Card')
-    vi.mocked(autocomplete).mockResolvedValue('src/components')
-    vi.mocked(multiselect).mockResolvedValue([])
-    vi.mocked(confirm).mockResolvedValue(false)
+    answers({ generator: 'component' })
 
     await runWizard(config)
 

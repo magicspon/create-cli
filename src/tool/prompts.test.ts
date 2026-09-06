@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockInstance } from 'vitest'
 import { cancel } from '@clack/prompts'
 import { isInteractive, releaseStdin, unwrap } from './prompts.ts'
+import { restoreTTY, setTTY } from './testing.ts'
 
 const CANCELLED = Symbol('clack:cancel')
 
@@ -20,23 +21,6 @@ vi.mock('@clack/prompts', () => ({
   cancel: vi.fn(),
   isCancel: (value: unknown) => value === CANCELLED,
 }))
-
-/** `isTTY` is a plain property, so it is swapped rather than spied on. */
-function setTTY(stdin: boolean, stdout: boolean): void {
-  Object.defineProperty(process.stdin, 'isTTY', {
-    value: stdin,
-    configurable: true,
-  })
-  Object.defineProperty(process.stdout, 'isTTY', {
-    value: stdout,
-    configurable: true,
-  })
-}
-
-const original = {
-  stdin: Object.getOwnPropertyDescriptor(process.stdin, 'isTTY'),
-  stdout: Object.getOwnPropertyDescriptor(process.stdout, 'isTTY'),
-}
 
 let pause: MockInstance<typeof process.stdin.pause>
 let unref: MockInstance<typeof process.stdin.unref>
@@ -49,12 +33,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.mocked(cancel).mockClear()
-  if (original.stdin) {
-    Object.defineProperty(process.stdin, 'isTTY', original.stdin)
-  }
-  if (original.stdout) {
-    Object.defineProperty(process.stdout, 'isTTY', original.stdout)
-  }
+  restoreTTY()
 })
 
 describe('releaseStdin', () => {

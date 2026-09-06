@@ -40,6 +40,7 @@ src/
     fuzzy.ts            # path scoring, shared by both pickers
     prompts.ts          # clack helpers — cancel handling, stdin release
     user-templates.ts   # the configured template directory, matched by filename
+    testing.ts          # test-only: the temp project, the TTY swap, the clack casts
   templates/            # one file per built-in output type
 ```
 

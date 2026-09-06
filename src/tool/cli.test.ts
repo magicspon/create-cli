@@ -8,15 +8,9 @@
  * file that throws.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { text } from '@clack/prompts'
 import {
@@ -31,6 +25,7 @@ import {
   subCommandFor,
 } from './cli.ts'
 import { resolveConfig } from './config.ts'
+import { createProject, restoreTTY, setTTY, validatorOf } from './testing.ts'
 
 import type { CommandDef } from 'citty'
 import type { MockInstance } from 'vitest'
@@ -53,13 +48,11 @@ let error: MockInstance<typeof console.error>
 
 /** A project containing exactly these files, plus a `package.json`. */
 function project(files: Array<string> = [], user = {}): ScaffoldConfig {
+  // The root is found by walking up to a `package.json`, so the project needs
+  // one whatever the case is about; only its existence is read.
   writeFileSync(join(root, 'package.json'), '{}')
-  for (const file of files) {
-    mkdirSync(join(root, dirname(file)), { recursive: true })
-    writeFileSync(join(root, file), '')
-  }
 
-  return resolveConfig({ presets: ['storybook'], ...user }, root)
+  return createProject(root, files, user)
 }
 
 function generatorNamed(id: string, scaffold: ScaffoldConfig): Generator {
@@ -68,30 +61,12 @@ function generatorNamed(id: string, scaffold: ScaffoldConfig): Generator {
   return generator
 }
 
-function setTTY(value: boolean): void {
-  for (const stream of [process.stdin, process.stdout]) {
-    Object.defineProperty(stream, 'isTTY', { value, configurable: true })
-  }
-}
-
-const originalTTY = {
-  stdin: Object.getOwnPropertyDescriptor(process.stdin, 'isTTY'),
-  stdout: Object.getOwnPropertyDescriptor(process.stdout, 'isTTY'),
-}
-
 /** Run a citty command's handler without going through argv parsing. */
 async function invoke(
   command: { run?: (context: never) => unknown },
   args: Record<string, unknown>,
 ): Promise<void> {
   await command.run?.({ args } as never)
-}
-
-/** A prompt's validator, which clack types as "a function or a schema". */
-function validatorOf(prompt: {
-  validate?: unknown
-}): (value: string) => string | undefined {
-  return prompt.validate as (value: string) => string | undefined
 }
 
 beforeEach(() => {
@@ -112,12 +87,7 @@ afterEach(() => {
   vi.unstubAllEnvs()
   vi.restoreAllMocks()
   vi.mocked(text).mockReset()
-  if (originalTTY.stdin) {
-    Object.defineProperty(process.stdin, 'isTTY', originalTTY.stdin)
-  }
-  if (originalTTY.stdout) {
-    Object.defineProperty(process.stdout, 'isTTY', originalTTY.stdout)
-  }
+  restoreTTY()
   process.exitCode = undefined
 })
 
