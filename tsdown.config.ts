@@ -12,7 +12,7 @@ export default defineConfig({
   entry: ['src/index.ts', 'src/define-config.ts'],
   format: 'esm',
   platform: 'node',
-  target: 'node20.19',
+  target: 'node26',
   // Types ship because `defineConfig` is only worth importing for them — and
   // only for that entry, because nothing imports the binary, so a `.d.mts`
   // beside it is an empty file the package would ship forever.

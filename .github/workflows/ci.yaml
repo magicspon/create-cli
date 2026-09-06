@@ -19,6 +19,18 @@ jobs:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
 
+    # A release otherwise runs this suite over identical source four times: the
+    # feature PR, its merge to main, the changesets version PR, and the merge of
+    # that. The version commit touches only `.changeset/`, `CHANGELOG.md` and the
+    # version field in `package.json`, so skip the version PR by head branch and
+    # its merge by commit message. Merge commits and squashes word that message
+    # differently, hence two checks. Pushes straight to main still run, because
+    # nothing else checks them.
+    if: >-
+      github.head_ref != 'changeset-release/main'
+      && !contains(github.event.head_commit.message, 'changeset-release/main')
+      && !startsWith(github.event.head_commit.message, 'chore(release): version packages')
+
     steps:
       - uses: actions/checkout@v7
 
@@ -28,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.20.0
+          node-version: 26.8.1
           cache: pnpm
 
       - name: Install dependencies

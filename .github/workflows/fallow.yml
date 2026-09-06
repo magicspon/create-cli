@@ -18,6 +18,12 @@ jobs:
   audit:
     name: Audit changed files
     runs-on: ubuntu-latest
+
+    # The changesets version PR changes no source, so a changed-files audit has
+    # nothing to look at. `workflow_dispatch` leaves `head_ref` empty and so is
+    # never skipped by this.
+    if: github.head_ref != 'changeset-release/main'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -31,7 +37,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.20.0
+          node-version: 26.8.1
           cache: pnpm
 
       # Fallow resolves package `exports` maps through node_modules. It runs
