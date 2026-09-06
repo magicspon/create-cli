@@ -221,8 +221,12 @@ const presets: Record<string, Array<Generator>> = {
   ],
 }
 
-/** Every preset name, for naming the ones a typo could have meant. */
-const presetNames: Array<string> = Object.keys(presets)
+/**
+ * Every preset name, for naming the ones a typo could have meant — and for
+ * `scaffold kit new --preset`, which offers the same names the config field
+ * does.
+ */
+export const presetNames: Array<string> = Object.keys(presets)
 
 /**
  * The built-in generators for a given preset selection: always the core, plus

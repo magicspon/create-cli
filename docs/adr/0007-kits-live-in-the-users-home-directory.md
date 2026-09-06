@@ -95,6 +95,28 @@ The alias fixes resolution, not types. A kit gets a `package.json` and a `tsconf
 its own config file still adds the devDependency, or writes the config as a plain object, since
 every field is optional.
 
+## A new kit is a copy of the built-in core
+
+`scaffold kit new wibble` seeds the kit with `component.ts`, `hook.ts` and `test.ts` — the real
+`src/templates` sources, comments and all, with the type import repointed at the package and a
+`defineTemplate` default export carrying the generator's config. A kit is a house style, and a house
+style starts as an edit of what the tool already emits rather than as an empty directory.
+
+The alternative — one hand-written starter stub — was what shipped first, and it is a second copy of
+a template body that nothing keeps in step with the real one. Copying the source means there is no
+paraphrase to drift, at the cost of publishing `src/templates` alongside `dist` and of resolving it
+from two places at runtime, since this module is a file in development and part of a bundle once
+published.
+
+The copied config is spelled out in full rather than left to inherit. A kit is adopted by projects
+that never enabled the preset a template came from, and there the filename names no existing
+generator — so without a `fileName` of its own the file would refuse the run. (ADR 0006)
+
+**Presets are copied only when named**, by `kit new --preset storybook`. The core assumes nothing
+beyond React and a kit applies to every project that adopts it, so seeding `story.ts` unasked would
+hand a project with no Storybook a `story` generator — which is exactly what shipping the presets
+switched off exists to prevent. (ADR 0003)
+
 ## `kit` is a reserved generator id
 
 `scaffold kit new` and `scaffold kit ls` are subcommands, and subcommands are generators. A template
@@ -120,6 +142,15 @@ reproducing `homedir()`.
 `--help` could name each generator's source was rejected as a large public surface for a question
 `scaffold kit ls` plus one documented precedence rule already answers. It stays available if merge
 confusion turns out to be real.
+
+**The package publishes `src/templates` as well as `dist`.** `kit new` copies those files as text,
+so they have to be there — and they are read from `../templates` or `../src/templates`, whichever
+exists, because this module runs from `src/tool/` in development and from inside `dist/index.mjs`
+once published. (ADR 0004)
+
+**A built-in's source is `src/templates/<id>.ts` by convention**, not by a field on `Generator`.
+That convention was already the rule for adding an output type (ADR 0001); the copy now depends on
+it, so a test asserts every built-in generator has a file of its name.
 
 **Kits declare no compatibility range.** Widening the template context is backwards compatible and
 narrowing it is a major version; Changesets already governs that, and a declared range is machinery

@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1788699201.7854526,
-    "ast_hash": "3c85653263ee903524f9cb92c6eb2db0",
+    "mtime": 1788701409.497347,
+    "ast_hash": "8487cbd0ab432d798ca15f1088bc4539",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -20,13 +20,13 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788699209.5116324,
-    "ast_hash": "6e7b451fda096e2bce2f86487f8193f6",
+    "mtime": 1788701638.5393953,
+    "ast_hash": "adef8c7b16e379beccf1fcaf7fee4d23",
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
-    "mtime": 1787678293.8471193,
-    "ast_hash": "cd06d0fa3f8a2e3ad83634ca219d1627",
+    "mtime": 1788700966.117849,
+    "ast_hash": "b3519d1a4686fcd178d2a67babafc58e",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
@@ -55,82 +55,82 @@
     "semantic_hash": ""
   },
   ".husky/_/applypatch-msg": {
-    "mtime": 1788699216.8377514,
+    "mtime": 1788701412.1061542,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/commit-msg": {
-    "mtime": 1788699216.8376045,
+    "mtime": 1788701412.106012,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/h": {
-    "mtime": 1788699216.837246,
+    "mtime": 1788701412.1056383,
     "ast_hash": "15239a01c5554e56ff745570fb583a91",
     "semantic_hash": ""
   },
   ".husky/_/husky.sh": {
-    "mtime": 1788699216.8385453,
+    "mtime": 1788701412.1068766,
     "ast_hash": "13871d2ab13e8423790ecb2c01c78c18",
     "semantic_hash": ""
   },
   ".husky/_/post-applypatch": {
-    "mtime": 1788699216.8379204,
+    "mtime": 1788701412.1062996,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/post-checkout": {
-    "mtime": 1788699216.838194,
+    "mtime": 1788701412.1065235,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/post-commit": {
-    "mtime": 1788699216.8376772,
+    "mtime": 1788701412.1060884,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/post-merge": {
-    "mtime": 1788699216.8383012,
+    "mtime": 1788701412.1065986,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/post-rewrite": {
-    "mtime": 1788699216.8380969,
+    "mtime": 1788701412.1064525,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-applypatch": {
-    "mtime": 1788699216.8378325,
+    "mtime": 1788701412.1062214,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-auto-gc": {
-    "mtime": 1788699216.838437,
+    "mtime": 1788701412.1067827,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-commit": {
-    "mtime": 1788699216.8373704,
+    "mtime": 1788701412.1057503,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-merge-commit": {
-    "mtime": 1788699216.8374546,
+    "mtime": 1788701412.105824,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-push": {
-    "mtime": 1788699216.838367,
+    "mtime": 1788701412.1067183,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/pre-rebase": {
-    "mtime": 1788699216.8380165,
+    "mtime": 1788701412.1063793,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
   ".husky/_/prepare-commit-msg": {
-    "mtime": 1788699216.837528,
+    "mtime": 1788701412.1059158,
     "ast_hash": "0b71c2e7d39daa010985d529f1320b37",
     "semantic_hash": ""
   },
@@ -145,7 +145,7 @@
     "semantic_hash": ""
   },
   "renovate.json": {
-    "mtime": 1788699209.512062,
+    "mtime": 1788700966.1180303,
     "ast_hash": "bcb71096e03aecf3f83d814d38d9736c",
     "semantic_hash": ""
   },
@@ -160,28 +160,28 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yaml": {
-    "mtime": 1788699201.7918742,
+    "mtime": 1788700966.1126716,
     "ast_hash": "f9cb78fa86165f211f399bfb58a9ed29",
     "semantic_hash": ""
   },
   ".github/workflows/fallow.yml": {
-    "mtime": 1788699201.792867,
+    "mtime": 1788700966.1130438,
     "ast_hash": "86febf1713f786d889a7eae178ccbe18",
     "semantic_hash": ""
   },
   ".github/workflows/release.yaml": {
-    "mtime": 1788699201.7922943,
+    "mtime": 1788700966.113695,
     "ast_hash": "a44bb652a44cb441f39d5af88b16e81e",
     "semantic_hash": ""
   },
   ".github/workflows/renovate.yaml": {
-    "mtime": 1788698704.7266734,
+    "mtime": 1788700966.1139414,
     "ast_hash": "05fb60bf9a836d669996bac682534630",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1788698067.9653828,
-    "ast_hash": "98a76051cb288ea01e91dd8f23fe9863",
+    "mtime": 1788701656.1115713,
+    "ast_hash": "954663586d1a60c50dbefb03f2ea96f5",
     "semantic_hash": ""
   },
   "docs/adr/0001-generators-emit-one-file.md": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "src/tool/generators.ts": {
-    "mtime": 1787652039.0406213,
-    "ast_hash": "45c942440600f917c81af86157b6da96",
+    "mtime": 1788701307.8371685,
+    "ast_hash": "b59427fc7d654781e2a81fc330922215",
     "semantic_hash": ""
   },
   "src/tool/pick.ts": {
@@ -335,7 +335,7 @@
     "semantic_hash": ""
   },
   "tsdown.config.ts": {
-    "mtime": 1788699201.7884283,
+    "mtime": 1788700966.1182168,
     "ast_hash": "39de0bfef265de66c3720c936d585b0f",
     "semantic_hash": ""
   },
@@ -375,28 +375,23 @@
     "semantic_hash": ""
   },
   "src/tool/kits.test.ts": {
-    "mtime": 1788698067.973036,
-    "ast_hash": "c347745591385c2cb464ad6c9471c4f1",
+    "mtime": 1788701617.279146,
+    "ast_hash": "c7591c0afb89766d9d577ab6eaf33ad1",
     "semantic_hash": ""
   },
   "src/tool/kits.ts": {
-    "mtime": 1788698067.9732726,
-    "ast_hash": "2274763d11ac0a7fe5d82f3ab0ed8663",
-    "semantic_hash": ""
-  },
-  ".changeset/kits-in-the-home-directory.md": {
-    "mtime": 1788698067.9634962,
-    "ast_hash": "913306cb052d1ff820404056c01ba2d6",
+    "mtime": 1788701584.0283408,
+    "ast_hash": "f0648fcf18be71356c5572f5ebdef566",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1788693757.115312,
-    "ast_hash": "a1e83dc7302d833250b7ebbe5f886e82",
+    "mtime": 1788700966.1144016,
+    "ast_hash": "0a59423efe6a0947bbd646aaaf616986",
     "semantic_hash": ""
   },
   "docs/adr/0007-kits-live-in-the-users-home-directory.md": {
-    "mtime": 1788698067.9661887,
-    "ast_hash": "903946b7261c9aa678e96e4e43a7e34a",
+    "mtime": 1788701670.2288558,
+    "ast_hash": "62577d55e7926373138f6251687f4d1e",
     "semantic_hash": ""
   },
   "src/define-config.test.ts": {
@@ -405,13 +400,13 @@
     "semantic_hash": ""
   },
   "src/tool/cli.test.ts": {
-    "mtime": 1788698067.970676,
-    "ast_hash": "7b59cf4b5a79717b08081ed68190b571",
+    "mtime": 1788701534.0551414,
+    "ast_hash": "5045e0ac00a9a33f669980032bfbf98e",
     "semantic_hash": ""
   },
   "src/tool/cli.ts": {
-    "mtime": 1788698067.9710233,
-    "ast_hash": "47e1f1daaf3a368eeb0567f560b70040",
+    "mtime": 1788701868.6244223,
+    "ast_hash": "ba5b324e57dab2343eae220a7b6c4547",
     "semantic_hash": ""
   },
   "src/tool/pick.test.ts": {
@@ -439,14 +434,9 @@
     "ast_hash": "5ca80c33203e4cd41df847901d3873a6",
     "semantic_hash": ""
   },
-  ".changeset/heavy-moons-repeat.md": {
-    "mtime": 1788699216.9301574,
-    "ast_hash": "f2ee3c925ffa0a0c1fcd5a01118a6820",
-    "semantic_hash": ""
-  },
-  ".changeset/spotty-cups-attack.md": {
-    "mtime": 1788699216.9279058,
-    "ast_hash": "8ec136b7bd246cea114b6f15fd0a7964",
+  ".changeset/kit-new-copies-built-ins.md": {
+    "mtime": 1788701675.198402,
+    "ast_hash": "867d8dcb1e5ca75a9f77acf76658a896",
     "semantic_hash": ""
   }
 }
