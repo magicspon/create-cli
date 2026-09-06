@@ -74,6 +74,12 @@ describe('paths', () => {
     ])
   })
 
+  it('keeps a hook called nothing but "use" from losing its name', () => {
+    expect(paths(run({ generator: 'hook', name: 'use' }))).toEqual([
+      'src/hooks/use-use.ts',
+    ])
+  })
+
   it('does not double the use prefix when the name already carries one', () => {
     expect(paths(run({ generator: 'hook', name: 'useMouse' }))).toEqual([
       'src/hooks/use-mouse.ts',
@@ -404,6 +410,27 @@ describe('directories', () => {
     expect(
       run({ generator: 'component', name: 'Card', directory: '/etc' }),
     ).toMatchObject({ ok: false, kind: 'invalid-directory' })
+  })
+
+  it('refuses a directory that is nothing but whitespace', () => {
+    // `--dir "  "` is a directory that was given and means nothing, which is
+    // not the same as `--dir` having been omitted.
+    for (const directory of ['   ', '\t']) {
+      expect(
+        run({ generator: 'component', name: 'Card', directory }),
+      ).toMatchObject({ ok: false, kind: 'invalid-directory' })
+    }
+  })
+
+  it('writes to the project root for a directory key nothing configures', () => {
+    // A flat project is a legitimate answer, so an unconfigured key is a
+    // fallback rather than a refusal.
+    const flat = plan(
+      { generator: 'component', name: 'Card' },
+      { config: { ...config, directories: {} }, exists: () => false },
+    )
+
+    expect(paths(flat)).toEqual(['./card.tsx'])
   })
 })
 

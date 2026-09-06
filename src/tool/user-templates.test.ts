@@ -117,6 +117,12 @@ describe('templateFrom', () => {
     expect(template.fileName).toBeUndefined()
   })
 
+  it('takes a module that is the function itself, as CommonJS gives it', () => {
+    const template = templateFrom(() => 'from module', 'c.ts')
+
+    expect(template.render(context)).toBe('from module')
+  })
+
   it('takes a named `render`, so a template moved out of a config still works', () => {
     const template = templateFrom({ render: () => 'from render' }, 'c.ts')
 
@@ -184,6 +190,21 @@ describe('applyTemplates', () => {
     expect(component?.fileName(casings)).toBe('Card.tsx')
     // Not declared, so still the built-in's.
     expect(component?.description).toBe('a component')
+  })
+
+  it('takes the description and the target a file declares', () => {
+    // Both are what `--help` and the picker read, so a file that renames a
+    // built-in has to be able to say what it now is.
+    const [, story] = applyTemplates([stub('component'), stub('story')], {
+      story: {
+        description: 'our house story',
+        target: 'component',
+        render: () => '// mine',
+      },
+    })
+
+    expect(story?.description).toBe('our house story')
+    expect(story?.target).toBe('component')
   })
 
   it('is a no-op when there are no templates', () => {

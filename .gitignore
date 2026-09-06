@@ -22,6 +22,7 @@ storybook-static
 test-results
 playwright-report
 blob-report
+coverage
 .playwright
 
 # graphify's derived and machine-local output. `graph.json`, `manifest.json`,

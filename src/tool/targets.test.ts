@@ -193,6 +193,16 @@ describe('createTargetSearch', () => {
     expect(search()('dtab')[0]?.value).toBe('src/components/data-table.tsx')
   })
 
+  it('ranks every match, not only the best one', () => {
+    // A query every target matches equally well, so what is left to separate
+    // them is length — the shortest path is the one you meant.
+    expect(search()('src').map((option) => option.value)).toEqual([
+      'src/widgets/badge.tsx',
+      'src/components/wibble.tsx',
+      'src/components/data-table.tsx',
+    ])
+  })
+
   it('drops anything the query does not match', () => {
     expect(search()('zzz')).toEqual([])
   })
@@ -213,6 +223,12 @@ describe('noTargetsMessage', () => {
   it('names the component generator for a story', () => {
     expect(noTargetsMessage(story, registry)).toContain(
       'no components to write a story for',
+    )
+  })
+
+  it('says so plainly for a generator that has no target at all', () => {
+    expect(noTargetsMessage(generator('component'), registry)).toBe(
+      'component has nothing to be written against.',
     )
   })
 })

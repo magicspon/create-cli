@@ -185,7 +185,11 @@ export async function runWizard(config: ScaffoldConfig): Promise<void> {
     return
   }
 
-  intro(' scaffold ')
+  // The wizard asks no kit question — the registry is built before it runs, and
+  // rebuilding it mid-wizard would execute the project's config file twice. It
+  // says which kit is active instead, which is the only thing a kit changes
+  // here: the list of generators on offer. (ADR 0007)
+  intro(config.kit ? ` scaffold · kit: ${config.kit} ` : ' scaffold ')
 
   const request = await askRequest(config)
   if (request) await confirmAndWrite(request, config)

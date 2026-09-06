@@ -48,6 +48,9 @@ export function templateIdOf(fileName: string): string | null {
   const extension = extname(fileName)
   if (!EXTENSIONS.has(extension)) return null
 
+  // A file that is nothing but its own extension is a dotfile, refused above,
+  // so the stem is never empty here.
+  /* v8 ignore next */
   return fileName.slice(0, -extension.length) || null
 }
 
@@ -224,6 +227,7 @@ export function applyTemplates(
 export async function loadTemplates(
   directory: string,
   root: string,
+  alias: Record<string, string> = {},
 ): Promise<Record<string, DeclaredTemplate>> {
   const absolute = resolve(root, directory)
   if (!existsSync(absolute)) {
@@ -242,7 +246,11 @@ export async function loadTemplates(
 
   // Built here rather than at module scope so a project without a template
   // directory never pays for the loader.
-  const jiti = createJiti(import.meta.url)
+  //
+  // `alias` is how a template resolves our own package: jiti resolves imports
+  // from the template's own directory, and a kit in `~/.scaffold` has no
+  // `node_modules` to find `defineTemplate` in. (ADR 0007)
+  const jiti = createJiti(import.meta.url, { alias })
 
   const loaded = await Promise.all(
     files.map(async ([id, file]) => {

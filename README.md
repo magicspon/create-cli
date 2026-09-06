@@ -16,6 +16,7 @@ render: ({ pascalNam }) => `...`
 - [Everyday use](#everyday-use)
 - [Using presets](#using-presets)
 - [Adding custom templates](#adding-custom-templates)
+- [Kits: templates you keep, not the project](#kits-templates-you-keep-not-the-project)
 - [Configuration reference](#configuration-reference)
 - [How it works](#how-it-works)
 
@@ -39,6 +40,13 @@ bun add -d @magicspon/create-cli
 ```
 
 </details>
+
+Or globally, if you want one set of generators across every project you work in — see
+[Kits](#kits-templates-you-keep-not-the-project):
+
+```bash
+npm install -g @magicspon/create-cli
+```
 
 ### 2. Add a script
 
@@ -611,6 +619,83 @@ for this, along with `defineTemplate` for a file that is nothing but a template.
 
 ---
 
+## Kits: templates you keep, not the project
+
+A **kit** is a template directory in your home directory instead of in a project, so one set of
+generators can serve every repository you work in. Install the CLI globally and the kits come with
+you:
+
+```bash
+npm install -g @magicspon/create-cli
+scaffold kit new wibble
+```
+
+```
++ /Users/you/.scaffold/wibble
+  scaffold component Card --kit wibble
+  install in /Users/you/.scaffold/wibble to typecheck its templates
+```
+
+That directory is exactly a template directory — the same files, the same rules as
+[`scaffold/templates`](#a-directory-of-templates). Add `route.ts` to it and every project gets a
+`route` generator:
+
+```bash
+scaffold route Home --kit wibble
+scaffold kit ls
+```
+
+A kit holds templates and nothing else. It has no config file: `directories`, `imports`, `format`
+and `protect` belong to the project you are scaffolding **into**, so a kit's generators land where
+that project says they should.
+
+### Kits never apply unless you name them
+
+There is no default kit, and nothing in `~/.scaffold` loads because it happens to be there. Either
+pass `--kit`, or name one in the project's config so everyone on it gets the same generators:
+
+```ts
+export default defineConfig({ kit: 'wibble' })
+```
+
+`--kit` wins over the config field. This is deliberate: a kit that applied by itself would change
+what `scaffold component Card` writes in every repository on your machine, with nothing in any of
+them saying so.
+
+A kit you name that does not exist — or that holds no templates — stops the run and lists the kits
+you have. Contributing nothing looks exactly like success otherwise.
+
+### Your project still wins
+
+Generators layer, nearest the project last:
+
+```
+built-ins  ->  config `generators`  ->  the kit  ->  scaffold/templates
+```
+
+Each layer merges over the one beneath field by field, so a repository can adopt a kit whole and
+override the one generator that does not fit — with a bare render, keeping the kit's `fileName` and
+`directory`:
+
+```ts
+// scaffold/templates/component.ts — this project only
+export default ({ pascalName }) => `// ${pascalName}, our way\n`
+```
+
+### Typechecking a kit
+
+`scaffold kit new` writes a `package.json` and a `tsconfig.json` alongside the starter template. The
+kit **runs** without installing anything — `@magicspon/create-cli` resolves from wherever the CLI
+itself is installed — but an editor needs the real dependency to typecheck it:
+
+```bash
+cd ~/.scaffold/wibble && npm install
+```
+
+> `SCAFFOLD_HOME` overrides `~/.scaffold` if you keep your kits somewhere else.
+
+---
+
 ## Configuration reference
 
 Every field is optional.
@@ -621,6 +706,7 @@ Every field is optional.
 | `presets`     | `[]`                                     | Built-in groups to switch on                                                                         |
 | `generators`  | `[]`                                     | Your own generators                                                                                  |
 | `templates`   | `scaffold/templates` when it exists      | Directory of templates, named after the generator each one overrides or declares                     |
+| `kit`         | none                                     | A kit in `~/.scaffold` to apply to this project. Overridden by `--kit`                               |
 | `disable`     | `[]`                                     | Generator ids to switch off                                                                          |
 | `imports`     | `{}`                                     | Import specifiers your templates reference                                                           |
 | `protect`     | `[]`                                     | Directories no generator may write into                                                              |
