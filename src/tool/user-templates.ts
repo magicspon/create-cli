@@ -48,6 +48,9 @@ export function templateIdOf(fileName: string): string | null {
   const extension = extname(fileName)
   if (!EXTENSIONS.has(extension)) return null
 
+  // A file that is nothing but its own extension is a dotfile, refused above,
+  // so the stem is never empty here.
+  /* v8 ignore next */
   return fileName.slice(0, -extension.length) || null
 }
 

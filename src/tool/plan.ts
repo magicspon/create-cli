@@ -296,9 +296,7 @@ export function plan(request: ScaffoldRequest, io: PlanIO): Plan {
       ...casings,
       directory,
       path,
-      targetImport: generator.target
-        ? targetImportFor(generator, casings, config.registry)
-        : '',
+      targetImport: targetImportFor(generator, casings, config.registry),
       imports: config.imports,
     }),
   }))

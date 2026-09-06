@@ -122,15 +122,26 @@ export function isInside(directory: string, parent: string): boolean {
  * conventional layout — rather than the project root, which would enumerate
  * `docs/`, `node_modules/` and every other place a component cannot go.
  */
+/** `src/components` → `src`. Everything before the first separator. */
+function firstSegment(directory: string): string {
+  // `split` always yields a first element; the `??` is the strict-mode guard.
+  /* v8 ignore next */
+  return directory.split('/')[0] ?? ''
+}
+
 export function sourceRoot(config: ScaffoldConfig): string {
   const segments = Object.values(config.directories)
-    .map((directory) => directory.split('/')[0] ?? '')
+    .map(firstSegment)
     .filter(Boolean)
 
   // Every configured directory sharing one first segment is the common case;
   // anything else has no single root to search, so search the whole project.
   const unique = new Set(segments)
-  return unique.size === 1 ? (segments[0] ?? '') : ''
+  if (unique.size !== 1) return ''
+
+  // One segment in the set means at least one in the array.
+  /* v8 ignore next */
+  return segments[0] ?? ''
 }
 
 /**

@@ -174,6 +174,23 @@ describe('runWizard', () => {
     expect(process.exitCode).toBe(0)
   })
 
+  it('offers the project root for a directory key nothing configures', async () => {
+    // The prompt's placeholder and the "was this the default?" test have to
+    // agree, or accepting the default would stop meaning what omitting
+    // `--dir` means.
+    const config = project()
+    vi.mocked(select).mockResolvedValue('component')
+    vi.mocked(text).mockResolvedValue('Card')
+    vi.mocked(autocomplete).mockResolvedValue('.')
+    vi.mocked(multiselect).mockResolvedValue([])
+    vi.mocked(confirm).mockResolvedValue(true)
+
+    await runWizard({ ...config, directories: {} })
+
+    expect(vi.mocked(autocomplete).mock.calls[0]?.[0]?.placeholder).toBe('.')
+    expect(existsSync(join(root, 'card.tsx'))).toBe(true)
+  })
+
   it('never offers the target itself as something to compose', async () => {
     const config = project(['src/components/card.tsx'])
     vi.mocked(select).mockResolvedValue('story')

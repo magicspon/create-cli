@@ -21,25 +21,21 @@ export default defineConfig({
       // `lcovonly` rather than `lcov`: the latter writes a second HTML report
       // under `coverage/lcov-report`, which `html` has already produced.
       reporter: ['text', 'html', 'lcovonly'],
-      // Floors, not targets — set just under the numbers the suite already
-      // reaches, so a real regression fails CI while ordinary work does not
-      // have to chase the last percent. Raise them when the suite earns it.
+      // The suite covers every statement, branch, function and line, so the
+      // floor is the number itself: anything less is a path someone added and
+      // did not test.
       //
-      // Branches sits lower than the other three on purpose. v8 counts every
-      // `??` and `?.` as a branch, and the strict-mode guards this codebase is
-      // written with cannot all fire: `config.directories[key] ?? '.'` is dead
-      // for a registered generator because `resolveConfig` fills an entry for
-      // every key the registry uses, `haystack[at - 1] ?? ''` is dead because
-      // the `at === 0` test beside it short-circuits first, and `selfAlias`
-      // returns `{}` only when this package cannot resolve itself. Reaching
-      // those would mean breaking the invariant that makes them dead, which
-      // asserts nothing about behaviour. What is left uncovered is that, not
-      // untested paths.
+      // The handful of guards that cannot fire are marked `/* v8 ignore next */`
+      // at the site, each one a `??` or `||` that `noUncheckedIndexedAccess`
+      // asks for on an index that is provably in range. Reaching them would
+      // mean breaking the invariant that makes them dead, which asserts
+      // nothing about behaviour — so they are excluded by name rather than
+      // hidden inside a lowered threshold.
       thresholds: {
-        statements: 99,
-        branches: 94,
-        functions: 99,
-        lines: 99,
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
       },
     },
   },

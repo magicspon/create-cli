@@ -64,6 +64,8 @@ export function listSourceFiles(config: ScaffoldConfig): Array<string> {
 
 /** `wibble.stories.tsx` → `wibble`. Everything before the first dot. */
 function stemOf(fileName: string): string {
+  // `split` always yields a first element; the `??` is the strict-mode guard.
+  /* v8 ignore next */
   return fileName.split('.')[0] ?? ''
 }
 

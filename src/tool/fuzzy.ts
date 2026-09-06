@@ -29,7 +29,7 @@ export function fuzzyScore(query: string, target: string): number {
     if (at === -1) return -1
 
     if (at === previous + 1) score += 8
-    if (at === 0 || /[/\-_.]/.test(haystack[at - 1] ?? '')) score += 6
+    if (at === 0 || /[/\-_.]/.test(haystack.charAt(at - 1))) score += 6
     score -= Math.min(at - from, 4)
 
     previous = at

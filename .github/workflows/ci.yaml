@@ -41,7 +41,15 @@ jobs:
         run: pnpm typecheck
 
       - name: Test
-        run: pnpm test
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
 
       # The package ships compiled JS, so a build that breaks is a release that
       # breaks. Proving it builds on every PR is the cheapest place to find out.

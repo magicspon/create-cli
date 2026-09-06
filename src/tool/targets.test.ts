@@ -225,6 +225,12 @@ describe('noTargetsMessage', () => {
       'no components to write a story for',
     )
   })
+
+  it('says so plainly for a generator that has no target at all', () => {
+    expect(noTargetsMessage(generator('component'), registry)).toBe(
+      'component has nothing to be written against.',
+    )
+  })
 })
 
 describe('listFiles', () => {

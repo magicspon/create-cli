@@ -117,6 +117,12 @@ describe('templateFrom', () => {
     expect(template.fileName).toBeUndefined()
   })
 
+  it('takes a module that is the function itself, as CommonJS gives it', () => {
+    const template = templateFrom(() => 'from module', 'c.ts')
+
+    expect(template.render(context)).toBe('from module')
+  })
+
   it('takes a named `render`, so a template moved out of a config still works', () => {
     const template = templateFrom({ render: () => 'from render' }, 'c.ts')
 

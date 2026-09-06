@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createKit,
   isKitInvocation,
@@ -29,6 +29,9 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(home, { recursive: true, force: true })
+  // The `selfAlias` fallback case mocks jiti for itself alone.
+  vi.doUnmock('jiti')
+  vi.resetModules()
 })
 
 describe('kitsDirectory', () => {
@@ -84,6 +87,7 @@ describe('kitFromArgv', () => {
 
   it('is null for a trailing --kit with nothing after it', () => {
     expect(kitFromArgv(['component', '--kit'])).toBe(null)
+    expect(kitFromArgv(['component', '--kit='])).toBe(null)
   })
 })
 
@@ -173,5 +177,23 @@ describe('selfAlias', () => {
 
     expect(Object.keys(alias)).toEqual(['@magicspon/create-cli'])
     expect(alias['@magicspon/create-cli']).toMatch(/define-config/)
+  })
+
+  it('aliases nothing rather than throwing when we cannot resolve ourselves', async () => {
+    // Survivable on purpose: a kit template importing nothing still runs, and
+    // one that does fails by name rather than silently rendering something
+    // else. (ADR 0007)
+    vi.doMock('jiti', () => ({
+      createJiti: () => ({
+        esmResolve: () => {
+          throw new Error('cannot resolve')
+        },
+      }),
+    }))
+    vi.resetModules()
+
+    const { selfAlias: isolated } = await import('./kits.ts')
+
+    expect(isolated()).toEqual({})
   })
 })

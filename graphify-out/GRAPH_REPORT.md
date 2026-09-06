@@ -1,16 +1,16 @@
 # Graph Report - create-cli  (2026-09-06)
 
 ## Corpus Check
-- 82 files · ~41,470 words
+- 82 files · ~41,883 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 531 nodes · 834 edges · 45 communities (34 shown, 11 thin omitted)
+- 532 nodes · 835 edges · 45 communities (34 shown, 11 thin omitted)
 - Extraction: 97% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d7922abd`
+- Built from commit: `5a86ac9b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -103,16 +103,16 @@ Cohesion: 0.11
 Nodes (17): config, devDependencies, @changesets/changelog-github, @changesets/cli, @commitlint/cli, @commitlint/config-conventional, husky, nano-staged (+9 more)
 
 ### Community 3 - "Runtime Dependencies"
-Cohesion: 0.09
-Nodes (34): resolveChoice(), sourceRoot(), createDirectorySearch(), DirectoryOption, IGNORED, listDirectories(), walk(), fuzzyScore() (+26 more)
+Cohesion: 0.11
+Nodes (16): DirectoryOption, IGNORED, listDirectories(), walk(), fuzzyScore(), normalise(), createRegistry(), listFiles() (+8 more)
 
 ### Community 4 - "Storybook Example Components"
-Cohesion: 0.09
-Nodes (34): commit(), format(), accepted, rejected, isInside(), casingsOf(), GeneratorId, hookNameOf() (+26 more)
+Cohesion: 0.10
+Nodes (29): commit(), format(), accepted, rejected, isInside(), casingsOf(), GeneratorId, hookNameOf() (+21 more)
 
 ### Community 5 - "Router and Query Runtime"
-Cohesion: 0.15
-Nodes (24): Chosen, createMain(), GeneratorArgs, kitCommand, loadCliConfig(), parseWith(), runGenerator(), runKitLs() (+16 more)
+Cohesion: 0.09
+Nodes (48): Chosen, createMain(), GeneratorArgs, kitCommand, loadCliConfig(), parseWith(), resolveChoice(), runGenerator() (+40 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
@@ -200,7 +200,7 @@ Nodes (4): Agent skills, Domain docs, Issue tracker, Triage labels
 
 ### Community 51 - "Community 51"
 Cohesion: 0.06
-Nodes (41): defineConfig(), defineTemplate(), renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest() (+33 more)
+Nodes (40): defineConfig(), defineTemplate(), renderComponent(), renderHook(), renderHookTest(), renderMswTest(), renderStory(), renderTest() (+32 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.29
@@ -232,7 +232,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `Dev Dependencies` to `Package Manifest and Scripts`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **Why does `resolveConfig()` connect `Community 51` to `Storybook Example Components`, `Router and Query Runtime`?**
+- **Why does `resolveConfig()` connect `Community 51` to `Runtime Dependencies`, `Storybook Example Components`, `Router and Query Runtime`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `$schema`, `baseBranch`, `access` to the rest of the system?**
   _253 weakly-connected nodes found - possible documentation gaps or missing edges._

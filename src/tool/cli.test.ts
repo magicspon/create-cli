@@ -433,6 +433,18 @@ describe('loadCliConfig', () => {
     expect(error.mock.calls.join(' ')).toContain('There is no "nope" kit')
   })
 
+  it('reports a config file that threw something other than an Error', async () => {
+    // A config file is user code, so what it throws is not ours to assume.
+    writeFileSync(join(root, 'package.json'), '{}')
+    writeFileSync(join(root, 'scaffold.config.ts'), "throw 'not an Error'\n")
+    vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit')
+    })
+
+    await expect(loadCliConfig([], root)).rejects.toThrow('process.exit')
+    expect(error.mock.calls.join(' ')).toContain('not an Error')
+  })
+
   it('keeps `scaffold kit` working when the kit it names is broken', async () => {
     project()
 
