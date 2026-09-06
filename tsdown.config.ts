@@ -12,7 +12,9 @@ export default defineConfig({
   entry: ['src/index.ts', 'src/define-config.ts'],
   format: 'esm',
   platform: 'node',
-  target: 'node26',
+  // The floor in `engines`, not the newest release: output that downlevels for
+  // the oldest runtime we promise runs on every runtime above it.
+  target: 'node24',
   // Types ship because `defineConfig` is only worth importing for them — and
   // only for that entry, because nothing imports the binary, so a `.d.mts`
   // beside it is an empty file the package would ship forever.

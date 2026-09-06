@@ -56,9 +56,9 @@
       "matchPackageNames": ["c12", "citty", "jiti"]
     },
     {
-      "description": "The types have to describe the oldest runtime in `engines`, not the newest release, or the build accepts APIs that are missing at run time. `engines.node` is `>=26.0.0`, so the cap is the next major after it — raising the cap without raising the floor is what this rule exists to prevent.",
+      "description": "The types have to describe the oldest runtime in `engines`, not the newest release, or the build accepts APIs that are missing at run time. `engines.node` is `>=24.20.0`, so the cap is the next major after it — raising the cap without raising the floor is what this rule exists to prevent.",
       "matchPackageNames": ["@types/node"],
-      "allowedVersions": "<27"
+      "allowedVersions": "<25"
     },
     {
       "description": "The only published yalc release is a prerelease, so the exact pin is deliberate.",

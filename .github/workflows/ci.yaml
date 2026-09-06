@@ -16,8 +16,16 @@ jobs:
   # The browser job this replaced existed for stories, which this repo no
   # longer contains.
   verify:
-    name: Lint, typecheck, test, build
+    name: Lint, typecheck, test, build (node ${{ matrix.node }})
     runs-on: ubuntu-latest
+
+    # Both ends of the supported range: the floor in `engines.node`, which is
+    # what consumers are promised, and the version development happens on.
+    # Nothing in between can fail while both ends pass for a suite this small.
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.20.0', '26.8.1']
 
     # A release otherwise runs this suite over identical source four times: the
     # feature PR, its merge to main, the changesets version PR, and the merge of
@@ -40,7 +48,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 26.8.1
+          node-version: ${{ matrix.node }}
           cache: pnpm
 
       - name: Install dependencies
@@ -59,7 +67,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: coverage
+          # Named per runtime, because two matrix legs cannot write one artifact.
+          name: coverage-node-${{ matrix.node }}
           path: coverage/
           retention-days: 7
 
