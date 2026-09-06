@@ -49,7 +49,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "release": "changeset publish",
-	  "version-packages": "changeset version && pnpm i --package-lock-only",
+	  "version-packages": "changeset version && pnpm i --lockfile-only",
     "yalc:publish": "pnpm build && yalc publish --push --no-scripts",
     "yalc:remove": "yalc installations clean @magicspon/create-cli",
     "prepare": "husky"
